@@ -12,6 +12,102 @@
   var currentSortColumn = '';
   var currentSortAsc = true;
 
+  // BẢN ĐỒ PHÂN CẤP DANH MỤC
+  var CATEGORY_HIERARCHY = {
+    "TL QĐ 272/QĐ-CHK": [
+      "Văn bản, TL Việt Nam", "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHD", "Danh mục TLHDKT",
+      "ICAO", "ANNEX", "DOC"
+    ],
+    "Văn bản, TL Việt Nam": [
+      "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHD", "Danh mục TLHDKT"
+    ],
+    "ICAO": [
+      "ANNEX", "DOC"
+    ],
+    "TL ISO 9001:2015": [
+      "Chính sách chất lượng", "MTCL", "GCN ISO", "QT-TL ISO", "Lĩnh vực Không lưu", "Khác"
+    ],
+    "Tổ Không lưu": [
+      "Hệ thống VBĐHB TCT", "Hệ thống VBĐHB ĐKSKL", "Triển khai thông tin Tổ KL", "Họp Tổ KL"
+    ]
+  };
+
+  // QUẢN LÝ TAGS DANH MỤC
+  var uploadTags = [];
+  var editTags = [];
+
+  function addUploadTag() {
+    var input = document.getElementById('upload-tag-input');
+    if (!input) return;
+    var val = input.value.trim();
+    if (val) {
+      var parts = val.split(/[,;]/).map(function(p) { return p.trim(); }).filter(function(p) { return p.length > 0; });
+      parts.forEach(function(part) {
+        if (!uploadTags.some(function(t) { return t.toLowerCase() === part.toLowerCase(); })) {
+          uploadTags.push(part);
+        }
+      });
+      input.value = '';
+      renderUploadTags();
+    }
+  }
+
+  function removeUploadTag(index) {
+    uploadTags.splice(index, 1);
+    renderUploadTags();
+  }
+
+  function renderUploadTags() {
+    var container = document.getElementById('upload-category-tags');
+    if (!container) return;
+    if (uploadTags.length === 0) {
+      container.innerHTML = '<span class="text-xs text-gray-400 italic">Chưa chọn tag nào...</span>';
+      return;
+    }
+    container.innerHTML = uploadTags.map(function(tag, i) {
+      return '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300">' +
+               '<i class="fas fa-tag text-[10px] text-blue-600"></i> ' + tag +
+               '<button type="button" onclick="removeUploadTag(' + i + ')" class="text-blue-600 hover:text-blue-900 font-bold focus:outline-none ml-1">&times;</button>' +
+             '</span>';
+    }).join('');
+  }
+
+  function addEditTag() {
+    var input = document.getElementById('edit-tag-input');
+    if (!input) return;
+    var val = input.value.trim();
+    if (val) {
+      var parts = val.split(/[,;]/).map(function(p) { return p.trim(); }).filter(function(p) { return p.length > 0; });
+      parts.forEach(function(part) {
+        if (!editTags.some(function(t) { return t.toLowerCase() === part.toLowerCase(); })) {
+          editTags.push(part);
+        }
+      });
+      input.value = '';
+      renderEditTags();
+    }
+  }
+
+  function removeEditTag(index) {
+    editTags.splice(index, 1);
+    renderEditTags();
+  }
+
+  function renderEditTags() {
+    var container = document.getElementById('edit-category-tags');
+    if (!container) return;
+    if (editTags.length === 0) {
+      container.innerHTML = '<span class="text-xs text-gray-400 italic">Chưa chọn tag nào...</span>';
+      return;
+    }
+    container.innerHTML = editTags.map(function(tag, i) {
+      return '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">' +
+               '<i class="fas fa-tag text-[10px] text-yellow-600"></i> ' + tag +
+               '<button type="button" onclick="removeEditTag(' + i + ')" class="text-yellow-600 hover:text-yellow-900 font-bold focus:outline-none ml-1">&times;</button>' +
+             '</span>';
+    }).join('');
+  }
+
 
 
 
@@ -78,6 +174,7 @@
             docNumber: item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "",
             abstract: item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "",
             category: item["Danh mục"] || item.danhMuc || item.category || "Khác",
+            categories: item.categories || [],
             effectiveDate: item["Ngày hiệu lực"] || item.ngayHieuLuc || item.effectiveDate || "",
             expiryDate: item["Ngày hết hiệu lực"] || item.ngayHetHieuLuc || item.expiryDate || "",
             status: item["Trạng thái"] || item.trangThai || item.status || "Không xác định",
@@ -175,12 +272,15 @@
 
 
 
-      var categoryColor = "bg-gray-100 text-gray-700";
-      var category = doc.category ? String(doc.category).toLowerCase() : "";
-      if (category.indexOf("công văn") !== -1) categoryColor = "bg-blue-100 text-blue-700";
-      else if (category.indexOf("quy định") !== -1 || category.indexOf("quy trình") !== -1) categoryColor = "bg-purple-100 text-purple-700";
-      else if (category.indexOf("hướng dẫn") !== -1) categoryColor = "bg-orange-100 text-orange-700";
-      else if (category.indexOf("thông báo") !== -1) categoryColor = "bg-green-100 text-green-700";
+      var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
+      var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
+      
+      var catList = (Array.isArray(doc.categories) && doc.categories.length > 0) ? doc.categories : (doc.category ? [doc.category] : ['Khác']);
+      var categoryBadgesHtml = catList.map(function(c) {
+        return '<span class="inline-block bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] px-2 py-0.5 rounded-full font-medium transition-colors mr-1 mb-1">' +
+                 '<i class="fas fa-tag text-[9px] mr-1 text-blue-500"></i>' + c +
+               '</span>';
+      }).join('');
 
 
 
@@ -208,7 +308,7 @@
         '<td class="p-4" data-label="STT">' + (index + 1) + '</td>' +
         '<td class="p-4 font-semibold text-blue-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
         '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
-        '<td class="p-4" data-label="Danh mục"><span class="px-2.5 py-1 rounded-full text-xs font-medium ' + categoryColor + '">' + (doc.category || 'Khác') + '</span></td>' +
+        '<td class="p-4" data-label="Danh mục">' + categoryBadgesHtml + '</td>' +
         '<td class="p-4 text-gray-500" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
         '<td class="p-4" data-label="Trạng thái"><span class="px-2.5 py-1 rounded-full text-xs font-medium ' + statusColor + '">' + statusText + '</span></td>' +
         '<td class="p-4 text-center" data-label="Thao tác">' +
@@ -565,10 +665,29 @@
     });
   } 
   else {
+    var keyword = String(categoryName).toLowerCase().trim();
+    var validCatSet = new Set([keyword]);
+    
+    // Tự động bổ sung các danh mục con nếu click vào danh mục cha
+    for (var parent in CATEGORY_HIERARCHY) {
+      if (parent.toLowerCase() === keyword) {
+        CATEGORY_HIERARCHY[parent].forEach(function(child) {
+          validCatSet.add(child.toLowerCase());
+        });
+      }
+    }
+
     baseCategoryList = allDocuments.filter(function(doc) {
-      var cat = doc.category ? String(doc.category).toLowerCase().trim() : "";
-      var keyword = String(categoryName).toLowerCase().trim();
-      return cat.indexOf(keyword) !== -1;
+      var match = false;
+      if (Array.isArray(doc.categories) && doc.categories.length > 0) {
+        match = doc.categories.some(function(c) {
+          return validCatSet.has(c.toLowerCase());
+        });
+      }
+      if (!match && doc.category) {
+        match = validCatSet.has(String(doc.category).toLowerCase().trim());
+      }
+      return match;
     });
   }
   clearFilters();
@@ -761,6 +880,8 @@
     if (modal) modal.classList.add('hidden');
     var form = document.getElementById('upload-form');
     if (form) form.reset();
+    uploadTags = [];
+    renderUploadTags();
   }
 
 
@@ -786,7 +907,7 @@
 
     var soKyHieu = soKyHieuEl ? soKyHieuEl.value : '';
     var trichYeu = trichYeuEl ? trichYeuEl.value : '';
-    var danhMuc = danhMucEl ? danhMucEl.value : '';
+    var catList = uploadTags.length > 0 ? uploadTags : ['Khác'];
     var ngayBanHanh = ngayEl ? ngayEl.value : '';
     var ngayHetHan = ngayHetHanEl ? ngayHetHanEl.value : '';
     var ghiChu = ghiChuEl ? ghiChuEl.value : '';
@@ -830,7 +951,8 @@
         var formData = {
           soKyHieu: soKyHieu,
           trichYeu: trichYeu,
-          danhMuc: danhMuc,
+          categories: catList,
+          danhMuc: catList[0],
           ngayBanHanh: ngayBanHanh,
           ngayHetHan: ngayHetHan,
           ghiChu: ghiChu,
@@ -885,9 +1007,11 @@
    
     document.getElementById('edit-doc-id').value = docId;
     document.getElementById('edit-sokyhieu').value = doc.docNumber || '';
-    document.getElementById('edit-danhmuc').value = doc.category || 'Khác';
     document.getElementById('edit-trichyeu').value = doc.abstract || '';
     document.getElementById('edit-ghichu').value = doc.note || '';
+    
+    editTags = Array.isArray(doc.categories) && doc.categories.length > 0 ? [...doc.categories] : (doc.category ? [doc.category] : ['Khác']);
+    renderEditTags();
    
     if (doc.effectiveDate) {
       var d = new Date(doc.effectiveDate);
@@ -914,6 +1038,8 @@
       editModal.classList.add('hidden');
       editModal.classList.remove('flex');
     }
+    editTags = [];
+    renderEditTags();
   }
 
 
@@ -922,10 +1048,12 @@
   function submitEdit() {
     var docId = document.getElementById('edit-doc-id').value;
     var btn = document.getElementById('btn-edit-submit');
+    var catList = editTags.length > 0 ? editTags : ['Khác'];
     var formData = {
       docId: docId,
       soKyHieu: document.getElementById('edit-sokyhieu').value,
-      danhMuc: document.getElementById('edit-danhmuc').value,
+      categories: catList,
+      danhMuc: catList[0],
       trichYeu: document.getElementById('edit-trichyeu').value,
       ngayBanHanh: document.getElementById('edit-ngay').value,
       ngayHetHan: document.getElementById('edit-ngayhethan').value,
