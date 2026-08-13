@@ -1,5 +1,6 @@
 
   // BIẾN TOÀN CỤC
+  var BASE_URL = 'https://csdl-backend.onrender.com';
   var allDocuments = [];
   var currentUserRole = 'user';
   var baseCategoryList = [];
@@ -65,7 +66,7 @@
 
 
   function loadDashboardData() {
-    fetch('/api/data')
+    fetch(BASE_URL + '/api/data')
       .then(response => response.json())
       .then(result => {
         if (!result.success) throw new Error(result.message || 'Lỗi lấy dữ liệu');
@@ -841,7 +842,7 @@
 
 
 
-        fetch('/api/upload', {
+        fetch(BASE_URL + '/api/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -933,7 +934,7 @@
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Đang lưu...';
    
-    fetch('/api/update', {
+    fetch(BASE_URL + '/api/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
