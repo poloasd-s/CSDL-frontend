@@ -1018,10 +1018,13 @@
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
+    uploadTags = [];
     var titleEl = document.getElementById('title-danh-sach');
-    var danhMucEl = document.getElementById('frm-danhmuc');
-    var currentTitle = titleEl ? titleEl.innerText : '';
-    if (danhMucEl) danhMucEl.value = currentTitle !== 'Danh sách tài liệu' ? currentTitle : '';
+    var currentTitle = titleEl ? titleEl.innerText.trim() : '';
+    if (currentTitle && currentTitle !== 'Danh sách tài liệu' && currentTitle !== 'Tất cả tài liệu' && currentTitle.indexOf('Kết quả tìm kiếm') === -1 && currentTitle.indexOf('Tài liệu') === -1) {
+      uploadTags.push(currentTitle);
+    }
+    renderUploadTags();
   }
 
 
