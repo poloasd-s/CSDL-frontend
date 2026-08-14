@@ -69,15 +69,48 @@
     google.script.run
       .withSuccessHandler(function(data) {
         try {
-          allDocuments = typeof data === 'string' ? JSON.parse(data) : data;
+          var rawDocs = typeof data === 'string' ? JSON.parse(data) : data;
+          allDocuments = (rawDocs || []).map(function(item) {
+            var rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
+                ? item.categories.slice()
+                : (item.category ? [item.category] : []);
+            
+            var mainCat = item.category || "Khác";
+
+            var contextStr = (
+              (item.fileName || "") + " " +
+              (item.docNumber || "") + " " +
+              (item.abstract || "") + " " +
+              mainCat + " " +
+              rawCatList.join(" ")
+            ).toLowerCase();
+
+            var isAnnex = contextStr.indexOf("annex") !== -1;
+            var isIcao = contextStr.indexOf("icao") !== -1 || isAnnex;
+
+            if (isAnnex) {
+              if (!rawCatList.some(function(c) { return c.toUpperCase() === 'ANNEX'; })) rawCatList.push('ANNEX');
+              if (!rawCatList.some(function(c) { return c.toUpperCase() === 'ICAO'; })) rawCatList.push('ICAO');
+              if (mainCat === 'Khác' || mainCat.toUpperCase() === 'ICAO' || mainCat.toLowerCase().indexOf('annex') !== -1) {
+                mainCat = 'ANNEX';
+              }
+            } else if (isIcao) {
+              if (!rawCatList.some(function(c) { return c.toUpperCase() === 'ICAO'; })) rawCatList.push('ICAO');
+            }
+
+            if (rawCatList.length === 0) {
+              rawCatList = [mainCat];
+            }
+
+            item.category = mainCat;
+            item.categories = rawCatList;
+            return item;
+          });
+
           renderStats(allDocuments);
           renderRecentTable(allDocuments, false);
           renderWarningTables(allDocuments);
-          
-          // Đã sửa lại đúng tên hàm thông báo của bạn
           renderNotifications(allDocuments); 
-          
-          // Lệnh này bây giờ sẽ được chạy an toàn
           renderCharts(allDocuments); 
           
         } catch (err) {
@@ -736,18 +769,12 @@
 
 
     if (totalItems === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500">Chưa có dữ liệu phù hợp.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-500 italic">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>';
       return;
     }
 
-
-
-
     var adminClass = (currentUserRole === 'admin') ? '' : 'hidden';
     var pageData = currentCategoryList.slice(startItem, endItem);
-
-
-
 
     pageData.forEach(function(doc, index) {
       var dateDisplay = "N/A";
@@ -756,37 +783,41 @@
         if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
       }
 
+      var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+      var statusBadgeHtml = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + evalInfo.badgeClass + '">' +
+                              '<span class="w-1.5 h-1.5 rounded-full ' + evalInfo.dotColor + '"></span>' +
+                              evalInfo.statusText + (evalInfo.daysDiff < 9000 ? ' (' + evalInfo.countdownText + ')' : '') +
+                            '</span>';
 
-
-
-      var statusText = doc.status ? String(doc.status).trim() : "Không xác định";
-      var statusLower = statusText.toLowerCase();
-      var statusColor = "bg-gray-100 text-gray-700";
-      if (statusLower === "còn hiệu lực") statusColor = "bg-green-100 text-green-700";
-      else if (statusLower === "sắp hết hiệu lực") statusColor = "bg-orange-100 text-orange-700";
-      else if (statusLower.indexOf("hết hiệu lực") !== -1) statusColor = "bg-red-100 text-red-700";
-
-
-
+      var catList = (Array.isArray(doc.categories) && doc.categories.length > 0) ? doc.categories : (doc.category ? [doc.category] : []);
+      var categoryBadgesHtml = catList.map(function(c) {
+        return '<span class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] px-2 py-0.5 rounded-full font-medium transition-colors mr-1 mb-1 shadow-2xs">' +
+                 '<i class="fas fa-tag text-[9px] text-blue-500"></i>' + c +
+               '</span>';
+      }).join('');
+      if (!categoryBadgesHtml) {
+        categoryBadgesHtml = '<span class="text-xs text-gray-400 italic">Chưa gắn tag</span>';
+      }
 
       var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
       var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
       var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
      
       var tr = document.createElement('tr');
-      tr.className = "hover:bg-blue-50 transition-colors";
+      tr.className = "hover:bg-blue-50/50 transition-colors";
      
       var htmlString =
-        '<td class="p-4" data-label="STT">' + (startItem + index + 1) + '</td>' +
+        '<td class="p-4 text-gray-500 font-medium" data-label="STT">' + (startItem + index + 1) + '</td>' +
         '<td class="p-4 font-semibold text-blue-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
-        '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
-        '<td class="p-4 text-gray-500" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
-        '<td class="p-4" data-label="Trạng thái"><span class="px-2.5 py-1 rounded-full text-xs font-medium ' + statusColor + '">' + statusText + '</span></td>' +
-        '<td class="p-4 text-center" data-label="Thao tác">' +
+        '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+        '<td class="p-4 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
+        '<td class="p-4 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
+        '<td class="p-4" data-label="Danh mục / Tags">' + categoryBadgesHtml + '</td>' +
+        '<td class="p-4 text-center whitespace-nowrap" data-label="Thao tác">' +
           '<div class="flex items-center justify-center gap-3">' +
-            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600" title="Xem"><i class="fas fa-eye"></i></a>' +
-            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600" title="Tải"><i class="fas fa-download"></i></a>' +
-            '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600" title="Sửa"><i class="fas fa-edit"></i></button>' +
+            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1" title="Xem"><i class="fas fa-eye"></i></a>' +
+            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải"><i class="fas fa-download"></i></a>' +
+            '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1" title="Sửa"><i class="fas fa-edit"></i></button>' +
           '</div>' +
         '</td>';
        

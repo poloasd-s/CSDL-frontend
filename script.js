@@ -169,21 +169,55 @@
         const data = result.data || [];
         
         // MAPPING: Đổi key từ Tiếng Việt (từ Sheets/MongoDB) sang Tiếng Anh (cho frontend)
-        const mappedData = data.map(item => ({
-            ...item,
-            docNumber: item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "",
-            abstract: item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "",
-            category: item["Danh mục"] || item.danhMuc || item.category || "Khác",
-            categories: item.categories || [],
-            effectiveDate: item["Ngày hiệu lực"] || item.ngayHieuLuc || item.effectiveDate || "",
-            expiryDate: item["Ngày hết hiệu lực"] || item.ngayHetHieuLuc || item.expiryDate || "",
-            status: item["Trạng thái"] || item.trangThai || item.status || "Không xác định",
-            driveLink: item["Link Drive"] || item.linkDrive || item.driveLink || "",
-            fileId: item["File ID"] || item.fileID || item.fileId || "",
-            note: item["Ghi chú"] || item.ghiChu || item.note || "",
-            fileName: item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "",
-            updatedBy: item["Người cập nhật"] || item.nguoiCapNhat || item.updatedBy || ""
-        }));
+        const mappedData = data.map(item => {
+            let rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
+                ? [...item.categories]
+                : (item["Danh mục"] || item.danhMuc || item.category ? [item["Danh mục"] || item.danhMuc || item.category] : []);
+            
+            let mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
+
+            // 1. Tự động nhận diện tài liệu Annex để phân vào danh mục ICAO -> ANNEX
+            let contextStr = (
+              (item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "") + " " +
+              (item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "") + " " +
+              (item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "") + " " +
+              mainCat + " " +
+              rawCatList.join(" ")
+            ).toLowerCase();
+
+            let isAnnex = contextStr.includes("annex");
+            let isIcao = contextStr.includes("icao") || isAnnex;
+
+            if (isAnnex) {
+              if (!rawCatList.some(c => c.toUpperCase() === 'ANNEX')) rawCatList.push('ANNEX');
+              if (!rawCatList.some(c => c.toUpperCase() === 'ICAO')) rawCatList.push('ICAO');
+              if (mainCat === 'Khác' || mainCat.toUpperCase() === 'ICAO' || mainCat.toLowerCase().includes('annex')) {
+                mainCat = 'ANNEX';
+              }
+            } else if (isIcao) {
+              if (!rawCatList.some(c => c.toUpperCase() === 'ICAO')) rawCatList.push('ICAO');
+            }
+
+            if (rawCatList.length === 0) {
+              rawCatList = [mainCat];
+            }
+
+            return {
+                ...item,
+                docNumber: item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "",
+                abstract: item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "",
+                category: mainCat,
+                categories: rawCatList,
+                effectiveDate: item["Ngày hiệu lực"] || item.ngayHieuLuc || item.effectiveDate || "",
+                expiryDate: item["Ngày hết hiệu lực"] || item.ngayHetHieuLuc || item.expiryDate || "",
+                status: item["Trạng thái"] || item.trangThai || item.status || "Không xác định",
+                driveLink: item["Link Drive"] || item.linkDrive || item.driveLink || "",
+                fileId: item["File ID"] || item.fileID || item.fileId || "",
+                note: item["Ghi chú"] || item.ghiChu || item.note || "",
+                fileName: item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "",
+                updatedBy: item["Người cập nhật"] || item.nguoiCapNhat || item.updatedBy || ""
+            };
+        });
 
         try {
           allDocuments = mappedData;
@@ -726,15 +760,9 @@
       currentSortAsc = true;
     }
 
-
-
-
     function compareElements(a, b) {
       var valA = a[column] ? a[column] : "";
       var valB = b[column] ? b[column] : "";
-
-
-
 
       if (column === 'effectiveDate') {
         var dateA = new Date(valA).getTime() || 0;
@@ -742,22 +770,18 @@
         return currentSortAsc ? (dateA - dateB) : (dateB - dateA);
       }
 
-
-
+      if (column === 'category') {
+        valA = Array.isArray(a.categories) && a.categories.length > 0 ? a.categories.join(', ') : (a.category || '');
+        valB = Array.isArray(b.categories) && b.categories.length > 0 ? b.categories.join(', ') : (b.category || '');
+      }
 
       var strA = String(valA).toLowerCase();
       var strB = String(valB).toLowerCase();
-
-
-
 
       if (strA < strB) return currentSortAsc ? -1 : 1;
       if (strA > strB) return currentSortAsc ? 1 : -1;
       return 0;
     }
-
-
-
 
     if (currentCategoryList && currentCategoryList.length > 0) {
       currentCategoryList.sort(compareElements);
@@ -765,9 +789,6 @@
     if (baseCategoryList && baseCategoryList.length > 0) {
       baseCategoryList.sort(compareElements);
     }
-
-
-
 
     currentPage = 1;
     displayCurrentPage();
@@ -784,14 +805,20 @@
     baseCategoryList = allDocuments.filter(function(doc) {
       var cat = doc.category ? String(doc.category).toLowerCase().trim() : "";
       var note = doc.note ? String(doc.note).toLowerCase().trim() : "";
-      return cat.indexOf("ngoài") !== -1 || note.indexOf("ngoài") !== -1 || cat.indexOf("bên ngoài") !== -1;
+      var inCats = Array.isArray(doc.categories) && doc.categories.some(function(c) {
+        return c.toLowerCase().indexOf("ngoài") !== -1;
+      });
+      return inCats || cat.indexOf("ngoài") !== -1 || note.indexOf("ngoài") !== -1 || cat.indexOf("bên ngoài") !== -1;
     });
   } 
   else if (categoryName === 'Tài liệu nội bộ') {
     baseCategoryList = allDocuments.filter(function(doc) {
       var cat = doc.category ? String(doc.category).toLowerCase().trim() : "";
       var note = doc.note ? String(doc.note).toLowerCase().trim() : "";
-      return cat.indexOf("nội bộ") !== -1 || note.indexOf("nội bộ") !== -1 || cat.indexOf("trong bộ") !== -1;
+      var inCats = Array.isArray(doc.categories) && doc.categories.some(function(c) {
+        return c.toLowerCase().indexOf("nội bộ") !== -1;
+      });
+      return inCats || cat.indexOf("nội bộ") !== -1 || note.indexOf("nội bộ") !== -1 || cat.indexOf("trong bộ") !== -1;
     });
   } 
   else if (categoryName === '30 ngày gần nhất') {
@@ -912,7 +939,7 @@
     if (btnNext) btnNext.style.opacity = (endItem >= totalItems) ? '0.5' : '1';
 
     if (totalItems === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500 italic">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-500 italic">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>';
       return;
     }
 
@@ -932,6 +959,16 @@
                               evalInfo.statusText + (evalInfo.daysDiff < 9000 ? ' (' + evalInfo.countdownText + ')' : '') +
                             '</span>';
 
+      var catList = (Array.isArray(doc.categories) && doc.categories.length > 0) ? doc.categories : (doc.category ? [doc.category] : []);
+      var categoryBadgesHtml = catList.map(function(c) {
+        return '<span class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] px-2 py-0.5 rounded-full font-medium transition-colors mr-1 mb-1 shadow-2xs">' +
+                 '<i class="fas fa-tag text-[9px] text-blue-500"></i>' + c +
+               '</span>';
+      }).join('');
+      if (!categoryBadgesHtml) {
+        categoryBadgesHtml = '<span class="text-xs text-gray-400 italic">Chưa gắn tag</span>';
+      }
+
       var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
       var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
       var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
@@ -945,6 +982,7 @@
         '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
         '<td class="p-4 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
         '<td class="p-4 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
+        '<td class="p-4" data-label="Danh mục / Tags">' + categoryBadgesHtml + '</td>' +
         '<td class="p-4 text-center whitespace-nowrap" data-label="Thao tác">' +
           '<div class="flex items-center justify-center gap-3">' +
             '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1" title="Xem"><i class="fas fa-eye"></i></a>' +
