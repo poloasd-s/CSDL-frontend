@@ -865,7 +865,10 @@
   // --- MODULE UPLOAD ---
   function openModal() {
     var modal = document.getElementById('upload-modal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
     var titleEl = document.getElementById('title-danh-sach');
     var danhMucEl = document.getElementById('frm-danhmuc');
     var currentTitle = titleEl ? titleEl.innerText : '';
@@ -877,7 +880,10 @@
 
   function closeModal() {
     var modal = document.getElementById('upload-modal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
     var form = document.getElementById('upload-form');
     if (form) form.reset();
     uploadTags = [];
