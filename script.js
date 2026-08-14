@@ -61,13 +61,13 @@
     var container = document.getElementById('upload-category-tags');
     if (!container) return;
     if (uploadTags.length === 0) {
-      container.innerHTML = '<span class="text-xs text-gray-400 italic">Chưa chọn tag nào...</span>';
+      container.innerHTML = '<span class="text-xs text-amber-700/60 italic px-1">Chưa chọn tag nào...</span>';
       return;
     }
     container.innerHTML = uploadTags.map(function(tag, i) {
-      return '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300">' +
-               '<i class="fas fa-tag text-[10px] text-blue-600"></i> ' + tag +
-               '<button type="button" onclick="removeUploadTag(' + i + ')" class="text-blue-600 hover:text-blue-900 font-bold focus:outline-none ml-1">&times;</button>' +
+      return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FEF9E7] text-amber-900 border border-amber-300/80 shadow-xs transition hover:bg-amber-100/80">' +
+               '<i class="fas fa-tag text-[11px] text-amber-600"></i> ' + tag +
+               '<button type="button" onclick="removeUploadTag(' + i + ')" class="text-amber-400 hover:text-amber-800 font-bold focus:outline-none ml-1 text-sm leading-none transition">&times;</button>' +
              '</span>';
     }).join('');
   }
@@ -97,13 +97,13 @@
     var container = document.getElementById('edit-category-tags');
     if (!container) return;
     if (editTags.length === 0) {
-      container.innerHTML = '<span class="text-xs text-gray-400 italic">Chưa chọn tag nào...</span>';
+      container.innerHTML = '<span class="text-xs text-amber-700/60 italic px-1">Chưa chọn tag nào...</span>';
       return;
     }
     container.innerHTML = editTags.map(function(tag, i) {
-      return '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">' +
-               '<i class="fas fa-tag text-[10px] text-yellow-600"></i> ' + tag +
-               '<button type="button" onclick="removeEditTag(' + i + ')" class="text-yellow-600 hover:text-yellow-900 font-bold focus:outline-none ml-1">&times;</button>' +
+      return '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FEF9E7] text-amber-900 border border-amber-300/80 shadow-xs transition hover:bg-amber-100/80">' +
+               '<i class="fas fa-tag text-[11px] text-amber-600"></i> ' + tag +
+               '<button type="button" onclick="removeEditTag(' + i + ')" class="text-amber-400 hover:text-amber-800 font-bold focus:outline-none ml-1 text-sm leading-none transition">&times;</button>' +
              '</span>';
     }).join('');
   }

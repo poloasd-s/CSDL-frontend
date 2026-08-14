@@ -595,60 +595,63 @@
 
 
   <!-- ================= MODAL THÊM MỚI TÀI LIỆU ================= -->
-  <div id="upload-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="px-6 py-4 border-b flex justify-between items-center bg-blue-50">
-        <h3 class="text-lg font-bold text-blue-900"><i class="fas fa-upload mr-2"></i>Thêm tài liệu mới</h3>
-        <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+  <div id="upload-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh] animate-fade-in border border-gray-100">
+      <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-100/80 flex items-center justify-center text-amber-600 font-bold text-base">
+            <i class="fas fa-file-circle-plus"></i>
+          </div>
+          <h3 class="text-base font-bold text-gray-900">Thêm mới Thông tin Văn bản</h3>
+        </div>
+        <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold transition focus:outline-none">&times;</button>
       </div>
       <div class="p-6 overflow-y-auto custom-scrollbar">
         <form id="upload-form" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Số ký hiệu</label>
-              <input type="text" id="frm-sokyhieu" class="w-full border border-gray-300 rounded px-3 py-2 outline-none" placeholder="Không bắt buộc">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">SỐ / KÝ HIỆU VĂN BẢN</label>
+            <input type="text" id="frm-sokyhieu" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="Ví dụ: 4049/QĐ-QLB">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">DANH MỤC / TAG VĂN BẢN <span class="text-red-500">*</span></label>
+            <div id="upload-category-tags" class="flex flex-wrap gap-2.5 p-3 bg-[#FFFDF6] border border-amber-200/80 rounded-xl min-h-[48px] mb-2.5 items-center">
+              <span class="text-xs text-amber-700/60 italic px-1">Chưa chọn tag nào...</span>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục / Tag Văn bản</label>
-              <div id="upload-category-tags" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-gray-300 rounded-lg min-h-[42px] mb-2">
-                <span class="text-xs text-gray-400 italic">Chưa chọn tag nào...</span>
-              </div>
-              <div class="flex gap-2">
-                <input type="text" id="upload-tag-input" list="category-list" class="w-full border border-gray-300 rounded px-3 py-2 bg-white outline-none" placeholder="Nhập tag và nhấn Thêm">
-                <button type="button" onclick="addUploadTag()" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium text-sm flex-shrink-0">
-                  <i class="fas fa-plus"></i> Thêm
-                </button>
-              </div>
+            <div class="flex gap-2">
+              <input type="text" id="upload-tag-input" list="category-list" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 placeholder:text-gray-400" placeholder="Chọn hoặc nhập danh mục để thêm Tag..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addUploadTag();}">
+              <button type="button" onclick="addUploadTag()" class="px-4 py-2.5 bg-[#D97706] hover:bg-amber-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-1.5 flex-shrink-0">
+                <i class="fas fa-plus"></i> Thêm Tag
+              </button>
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Trích yếu / Tên tài liệu</label>
-            <textarea id="frm-trichyeu" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 outline-none" placeholder="Không bắt buộc"></textarea>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">NỘI DUNG TRÍCH YẾU</label>
+            <textarea id="frm-trichyeu" rows="3" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="QĐ Ban hành Quy trình Triển khai phương thức bay hàng không dân dụng."></textarea>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ngày ban hành</label>
-              <input type="date" id="frm-ngay" class="w-full border border-gray-300 rounded px-3 py-2 outline-none">
+              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">NGÀY BAN HÀNH / HIỆU LỰC</label>
+              <input type="date" id="frm-ngay" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ngày hết hiệu lực</label>
-              <input type="date" id="frm-ngayhethan" class="w-full border border-gray-300 rounded px-3 py-2 outline-none">
+              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">NGÀY HẾT HIỆU LỰC</label>
+              <input type="date" id="frm-ngayhethan" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition">
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
-            <input type="text" id="frm-ghichu" class="w-full border border-gray-300 rounded px-3 py-2 outline-none" placeholder="Nhập ghi chú (không bắt buộc)">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">GHI CHÚ</label>
+            <input type="text" id="frm-ghichu" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="Có 02 biểu mẫu đính kèm: BM-TKPTB-01, BM-TKPTB-02.">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">File đính kèm (PDF, Word, Excel...) <span class="text-red-500">*</span></label>
-            <input type="file" id="frm-file" multiple required class="w-full border border-gray-300 rounded px-3 py-2 text-sm cursor-pointer">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">FILE ĐÍNH KÈM (PDF, WORD, EXCEL...) <span class="text-red-500">*</span></label>
+            <input type="file" id="frm-file" multiple required class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-sm outline-none cursor-pointer file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition">
           </div>
         </form>
       </div>
-      <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
-        <button type="button" onclick="closeModal()" class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100 transition">Hủy</button>
-        <button type="button" onclick="submitUpload()" id="btn-submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center">
-          <i class="fas fa-save mr-2"></i> Lưu tài liệu
+      <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 rounded-b-2xl">
+        <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-[#F1F5F9] text-gray-700 hover:bg-gray-200 font-semibold text-sm rounded-xl transition">Hủy</button>
+        <button type="button" onclick="submitUpload()" id="btn-submit" class="px-5 py-2.5 bg-[#D97706] hover:bg-amber-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2">
+          <i class="fas fa-save"></i> Lưu tài liệu
         </button>
       </div>
     </div>
@@ -659,26 +662,31 @@
 
   <!-- ================= MODAL CHỈNH SỬA TÀI LIỆU ================= -->
   <div id="edit-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
-      <div class="bg-yellow-600 px-6 py-4 flex justify-between items-center text-white">
-        <h3 class="font-bold text-lg"><i class="fas fa-edit mr-2"></i>Chỉnh Sửa Thông Tin Tài Liệu</h3>
-        <button onclick="closeEditModal()" class="hover:text-gray-200 text-xl font-bold">&times;</button>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh] animate-fade-in border border-gray-100">
+      <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-100/80 flex items-center justify-center text-amber-600 font-bold text-base">
+            <i class="fas fa-edit"></i>
+          </div>
+          <h3 class="text-base font-bold text-gray-900">Chỉnh sửa Thông tin Văn bản</h3>
+        </div>
+        <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold transition focus:outline-none">&times;</button>
       </div>
-      <form id="edit-form" class="p-6 space-y-4" onsubmit="event.preventDefault(); submitEdit();">
+      <form id="edit-form" class="p-6 overflow-y-auto custom-scrollbar space-y-4" onsubmit="event.preventDefault(); submitEdit();">
         <input type="hidden" id="edit-doc-id">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Số / Ký hiệu</label>
-          <input type="text" id="edit-sokyhieu" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">SỐ / KÝ HIỆU VĂN BẢN</label>
+          <input type="text" id="edit-sokyhieu" required class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="4049/QĐ-QLB">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục / Tag Văn bản</label>
-          <div id="edit-category-tags" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-gray-300 rounded-lg min-h-[42px] mb-2">
-            <span class="text-xs text-gray-400 italic">Chưa chọn tag nào...</span>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">DANH MỤC / TAG VĂN BẢN <span class="text-red-500">*</span></label>
+          <div id="edit-category-tags" class="flex flex-wrap gap-2.5 p-3 bg-[#FFFDF6] border border-amber-200/80 rounded-xl min-h-[48px] mb-2.5 items-center">
+            <span class="text-xs text-amber-700/60 italic px-1">Chưa chọn tag nào...</span>
           </div>
           <div class="flex gap-2">
-            <input type="text" id="edit-tag-input" list="category-list" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none" placeholder="Nhập hoặc chọn tag...">
-            <button type="button" onclick="addEditTag()" class="px-3 py-2 font-bold text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg flex items-center gap-1 flex-shrink-0">
-              <i class="fas fa-plus"></i> Thêm
+            <input type="text" id="edit-tag-input" list="category-list" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm bg-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 placeholder:text-gray-400" placeholder="Chọn hoặc nhập danh mục để thêm Tag..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addEditTag();}">
+            <button type="button" onclick="addEditTag()" class="px-4 py-2.5 bg-[#D97706] hover:bg-amber-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-1.5 flex-shrink-0">
+              <i class="fas fa-plus"></i> Thêm Tag
             </button>
           </div>
           <datalist id="category-list">
@@ -711,27 +719,27 @@
           </datalist>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Trích yếu nội dung</label>
-          <textarea id="edit-trichyeu" rows="3" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none"></textarea>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">NỘI DUNG TRÍCH YẾU</label>
+          <textarea id="edit-trichyeu" rows="3" required class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="QĐ Ban hành Quy trình Triển khai phương thức bay hàng không dân dụng."></textarea>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày ban hành</label>
-            <input type="date" id="edit-ngay" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">NGÀY BAN HÀNH / HIỆU LỰC</label>
+            <input type="date" id="edit-ngay" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
-            <input type="date" id="edit-ngayhethan" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">NGÀY HẾT HIỆU LỰC</label>
+            <input type="date" id="edit-ngayhethan" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition">
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
-          <input type="text" id="edit-ghichu" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">GHI CHÚ</label>
+          <input type="text" id="edit-ghichu" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="Có 02 biểu mẫu đính kèm: BM-TKPTB-01, BM-TKPTB-02.">
         </div>
-        <div class="flex justify-end gap-3 pt-4 border-t">
-          <button type="button" onclick="closeEditModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 text-gray-700 font-medium">Hủy</button>
-          <button type="submit" id="btn-edit-submit" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium">
-            <i class="fas fa-save mr-1"></i> Cập nhật
+        <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+          <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 bg-[#F1F5F9] text-gray-700 hover:bg-gray-200 font-semibold text-sm rounded-xl transition">Hủy</button>
+          <button type="submit" id="btn-edit-submit" class="px-5 py-2.5 bg-[#D97706] hover:bg-amber-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2">
+            <i class="fas fa-save"></i> Cập nhật
           </button>
         </div>
       </form>
