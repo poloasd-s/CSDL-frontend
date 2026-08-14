@@ -248,6 +248,11 @@
         <li><a id="menu-ky-thuat" onclick="navigateTo('danh-sach', 'Tổ Kỹ thuật', 'menu-Ky-thuat')" class="menu-link flex items-center gap-3 px-4 py-2 hover:bg-blue-800 text-gray-300 border-l-4 border-transparent cursor-pointer transition-colors text-sm"><i class="fas fa-tools w-5 text-center"></i> Tổ Kỹ thuật</a></li>
         <li><a id="menu-phuc-vu-bay" onclick="navigateTo('danh-sach', 'Tổ Phục vụ bay', 'menu-phuc-vu-bay')" class="menu-link flex items-center gap-3 px-4 py-2 hover:bg-blue-800 text-gray-300 border-l-4 border-transparent cursor-pointer transition-colors text-sm"><i class="fas fa-headset w-5 text-center"></i> Tổ Phục vụ bay</a></li>
         <li><a id="menu-an-ninh" onclick="navigateTo('danh-sach', 'Tổ An ninh', 'menu-an-ninh')" class="menu-link flex items-center gap-3 px-4 py-2 hover:bg-blue-800 text-gray-300 border-l-4 border-transparent cursor-pointer transition-colors text-sm"><i class="fas fa-shield-alt w-5 text-center"></i> Tổ An ninh</a></li>
+        <li class="pt-2 border-t border-blue-900/60 mt-2">
+          <a id="menu-looker-studio" onclick="navigateTo('looker-studio', 'Báo cáo BI Looker Studio', 'menu-looker-studio')" class="menu-link flex items-center gap-3 px-4 py-2 hover:bg-blue-800 text-amber-300 hover:text-amber-200 border-l-4 border-transparent cursor-pointer transition-colors text-sm font-semibold">
+            <i class="fas fa-chart-pie w-5 text-center text-amber-400"></i> Báo cáo Looker Studio
+          </a>
+        </li>
       </ul>
     </nav>
   </aside>
@@ -361,39 +366,82 @@
      
       <!-- ================= TRANG 1: DASHBOARD ================= -->
       <div id="view-dashboard" class="block">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between"><div><p class="text-sm text-gray-500 font-medium">Tổng số tài liệu</p><h3 class="text-2xl font-bold text-gray-800 mt-1" id="stat-total">0</h3></div><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-file-alt"></i></div></div>
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between"><div><p class="text-sm text-gray-500 font-medium">Còn hiệu lực</p><h3 class="text-2xl font-bold text-green-600 mt-1" id="stat-active">0</h3></div><div class="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-check-circle"></i></div></div>
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between"><div><p class="text-sm text-gray-500 font-medium">Sắp hết hiệu lực</p><h3 class="text-2xl font-bold text-orange-500 mt-1" id="stat-expiring">0</h3></div><div class="w-12 h-12 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-exclamation-triangle"></i></div></div>
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between"><div><p class="text-sm text-gray-500 font-medium">Đã hết hiệu lực</p><h3 class="text-2xl font-bold text-red-500 mt-1" id="stat-expired">0</h3></div><div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl"><i class="fas fa-clock"></i></div></div>
-        </div>
-
-
-
-
-        <!-- BẢNG: Tài liệu mới cập nhật -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 mb-6">
-        <!-- Tiêu đề Bảng Tài liệu mới cập nhật (Đã thêm 30 ngày gần nhất) -->
-        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-lg">
-          <div class="flex items-center gap-2">
-          <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide">Tài liệu mới cập nhật</h2>
-            <span class="text-xs text-gray-500 font-normal">(30 ngày gần nhất)</span>
+        <!-- 4 THẺ KPI CHỈ SỐ THÔNG MINH (CLICK ĐỂ LỌC NHANH) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          
+          <!-- Thẻ 1: Tổng số tài liệu -->
+          <div onclick="filterByExpiryCard('all')" class="bg-white p-4 rounded-xl shadow-xs border border-blue-100 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng số tài liệu</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1 group-hover:text-blue-600 transition-colors" id="stat-total">0</h3>
+              <p class="text-[11px] text-gray-400 mt-1">Toàn bộ hồ sơ trong CSDL</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-xs">
+              <i class="fas fa-folder-open"></i>
+            </div>
           </div>
-          <button onclick="navigateTo('danh-sach', '30 ngày gần nhất', 'menu-all-docs')" class="text-xs text-blue-700 hover:text-blue-900 font-semibold underline transition">
-            Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i>
-          </button>
+
+          <!-- Thẻ 2: Còn hiệu lực (Màu Xanh lá) -->
+          <div onclick="filterByExpiryCard('active')" class="bg-white p-4 rounded-xl shadow-xs border border-emerald-100 hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Còn hiệu lực</p>
+              <h3 class="text-2xl font-bold text-emerald-600 mt-1 group-hover:text-emerald-700 transition-colors" id="stat-active">0</h3>
+              <p class="text-[11px] text-emerald-600/70 mt-1">An toàn (> 60 ngày hoặc vĩnh viễn)</p>
+            </div>
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-xs">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+
+          <!-- Thẻ 3: Sắp hết hiệu lực (Màu Cam / Vàng) -->
+          <div onclick="filterByExpiryCard('expiring')" class="bg-white p-4 rounded-xl shadow-xs border border-amber-100 hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Sắp hết hiệu lực</p>
+              <h3 class="text-2xl font-bold text-amber-600 mt-1 group-hover:text-amber-700 transition-colors" id="stat-expiring">0</h3>
+              <p class="text-[11px] text-amber-600/70 mt-1">Đếm ngược trong 30-60 ngày</p>
+            </div>
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-xs">
+              <i class="fas fa-clock-rotate-left"></i>
+            </div>
+          </div>
+
+          <!-- Thẻ 4: Đã hết hiệu lực (Màu Đỏ) -->
+          <div onclick="filterByExpiryCard('expired')" class="bg-white p-4 rounded-xl shadow-xs border border-rose-100 hover:shadow-md hover:border-rose-300 transition-all cursor-pointer group flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-rose-700 uppercase tracking-wider">Đã hết hiệu lực</p>
+              <h3 class="text-2xl font-bold text-rose-600 mt-1 group-hover:text-rose-700 transition-colors" id="stat-expired">0</h3>
+              <p class="text-[11px] text-rose-600/70 mt-1">Quá hạn / Cần thanh tra gấp</p>
+            </div>
+            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all shadow-xs">
+              <i class="fas fa-triangle-exclamation"></i>
+            </div>
+          </div>
+
         </div>
+
+        <!-- BẢNG: Tài liệu mới cập nhật (30 ngày gần nhất) -->
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 mb-6 overflow-hidden">
+          <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/70">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+              <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide">Tài liệu mới cập nhật</h2>
+              <span class="text-xs text-gray-500 font-normal hidden sm:inline">(30 ngày gần nhất)</span>
+            </div>
+            <button onclick="navigateTo('danh-sach', '30 ngày gần nhất', 'menu-all-docs')" class="text-xs text-blue-700 hover:text-blue-900 font-semibold underline transition flex items-center gap-1">
+              Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50 text-gray-600">
+              <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
                 <tr>
-                  <th class="p-4 font-medium w-16">STT</th>
-                  <th class="p-4 font-medium">Số ký hiệu</th>
-                  <th class="p-4 font-medium">Trích yếu</th>
-                  <th class="p-4 font-medium">Loại tài liệu</th>
-                  <th class="p-4 font-medium">Ngày ban hành</th>
-                  <th class="p-4 font-medium">Trạng thái</th>
-                  <th class="p-4 font-medium text-center">Thao tác</th>
+                  <th class="p-3.5 font-semibold w-16">STT</th>
+                  <th class="p-3.5 font-semibold">Số ký hiệu</th>
+                  <th class="p-3.5 font-semibold">Trích yếu</th>
+                  <th class="p-3.5 font-semibold">Loại tài liệu</th>
+                  <th class="p-3.5 font-semibold">Ngày ban hành</th>
+                  <th class="p-3.5 font-semibold">Trạng thái</th>
+                  <th class="p-3.5 font-semibold text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody id="table-recent-docs" class="divide-y divide-gray-100">
@@ -403,102 +451,114 @@
           </div>
         </div>
 
-
-
-
-        <!-- KHU VỰC 2 BẢNG CẢNH BÁO -->
+        <!-- KHU VỰC 2 BẢNG CẢNH BÁO CHỦ ĐỘNG -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
          
-          <!-- Bảng 1: Sắp hết hiệu lực -->
-          <div class="bg-white rounded-lg shadow-sm border border-orange-100">
-            <div class="bg-orange-50 p-4 border-b border-orange-100 flex justify-between items-center rounded-t-lg">
-              <h2 class="text-sm font-bold text-orange-800 uppercase tracking-wide">Tài liệu sắp hết hiệu lực</h2>
-              <div class="flex items-center gap-4">
-                <span id="badge-expiring" class="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">0</span>
-                <button href="#" onclick="viewAllStatus('sắp hết hiệu lực')" class="text-xs text-orange-700 hover:text-orange-900 font-semibold underline transition">Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i></button>
+          <!-- Bảng 1: Sắp hết hiệu lực (Màu Cam) -->
+          <div class="bg-white rounded-xl shadow-xs border border-amber-200 overflow-hidden flex flex-col">
+            <div class="bg-amber-50/80 p-4 border-b border-amber-200 flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-hourglass-half text-amber-600 text-sm"></i>
+                <h2 class="text-sm font-bold text-amber-900 uppercase tracking-wide">Tài liệu sắp hết hiệu lực</h2>
+              </div>
+              <div class="flex items-center gap-3">
+                <span id="badge-expiring" class="bg-amber-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs">0</span>
+                <button onclick="filterByExpiryCard('expiring')" class="text-xs text-amber-800 hover:text-amber-950 font-semibold underline transition">
+                  Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i>
+                </button>
               </div>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto flex-1">
               <table class="w-full text-left text-sm">
-                <thead class="bg-orange-50/50 text-orange-800">
+                <thead class="bg-amber-50/40 text-amber-900 text-xs uppercase tracking-wider">
                   <tr>
-                    <th class="p-3 font-medium">Số ký hiệu</th>
-                    <th class="p-3 font-medium">Trích yếu</th>
-                    <th class="p-3 font-medium">Ngày hết hạn</th>
-                    <th class="p-3 font-medium">Trạng thái</th>
-                    <th class="p-3 font-medium text-center">Thao tác</th>
+                    <th class="p-3 font-semibold">Số ký hiệu</th>
+                    <th class="p-3 font-semibold">Trích yếu</th>
+                    <th class="p-3 font-semibold">Ngày hết hạn</th>
+                    <th class="p-3 font-semibold">Cảnh báo hạn</th>
+                    <th class="p-3 font-semibold text-center">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody id="table-expiring-docs" class="divide-y divide-orange-50"></tbody>
+                <tbody id="table-expiring-docs" class="divide-y divide-amber-50"></tbody>
               </table>
             </div>
           </div>
 
-
-
-
-          <!-- Bảng 2: Đã hết hiệu lực -->
-          <div class="bg-white rounded-lg shadow-sm border border-red-100">
-            <div class="bg-red-50 p-4 border-b border-red-100 flex justify-between items-center rounded-t-lg">
-              <h2 class="text-sm font-bold text-red-800 uppercase tracking-wide">Tài liệu đã hết hiệu lực</h2>
-              <div class="flex items-center gap-4">
-                <span id="badge-expired" class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">0</span>
-                <button href="#" onclick="viewAllStatus('hết hiệu lực')" class="text-xs text-red-700 hover:text-red-900 font-semibold underline transition">Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i></button>
+          <!-- Bảng 2: Đã hết hiệu lực (Màu Đỏ) -->
+          <div class="bg-white rounded-xl shadow-xs border border-rose-200 overflow-hidden flex flex-col">
+            <div class="bg-rose-50/80 p-4 border-b border-rose-200 flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-triangle-exclamation text-rose-600 text-sm"></i>
+                <h2 class="text-sm font-bold text-rose-900 uppercase tracking-wide">Tài liệu đã hết hiệu lực / Thanh tra</h2>
+              </div>
+              <div class="flex items-center gap-3">
+                <span id="badge-expired" class="bg-rose-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs">0</span>
+                <button onclick="filterByExpiryCard('expired')" class="text-xs text-rose-800 hover:text-rose-950 font-semibold underline transition">
+                  Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i>
+                </button>
               </div>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto flex-1">
               <table class="w-full text-left text-sm">
-                <thead class="bg-red-50/50 text-red-800">
+                <thead class="bg-rose-50/40 text-rose-900 text-xs uppercase tracking-wider">
                   <tr>
-                    <th class="p-3 font-medium">Số ký hiệu</th>
-                    <th class="p-3 font-medium">Trích yếu</th>
-                    <th class="p-3 font-medium">Ngày hết hạn</th>
-                    <th class="p-3 font-medium">Trạng thái</th>
-                    <th class="p-3 font-medium text-center">Thao tác</th>
+                    <th class="p-3 font-semibold">Số ký hiệu</th>
+                    <th class="p-3 font-semibold">Trích yếu</th>
+                    <th class="p-3 font-semibold">Ngày hết hạn</th>
+                    <th class="p-3 font-semibold">Cảnh báo hạn</th>
+                    <th class="p-3 font-semibold text-center">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody id="table-expired-docs" class="divide-y divide-red-50"></tbody>
+                <tbody id="table-expired-docs" class="divide-y divide-rose-50"></tbody>
               </table>
             </div>
           </div>
-
-
-
 
         </div>
-      </div>
-      <!-- ================= KHU VỰC BIỂU ĐỒ (3 CỘT) ================= -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+
+        <!-- ================= KHU VỰC BIỂU ĐỒ (3 CỘT) ================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
          
           <!-- Biểu đồ 1: Theo Loại -->
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col">
-            <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide mb-3">Thống kê tài liệu theo loại</h2>
-            <div class="relative w-full h-[180px] flex items-center justify-center">
+          <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
+                <i class="fas fa-chart-pie text-blue-600"></i> Thống kê theo phân loại
+              </h2>
+            </div>
+            <div class="relative w-full h-[220px] flex items-center justify-center">
               <canvas id="chartCategory"></canvas>
             </div>
           </div>
 
-
           <!-- Biểu đồ 2: Theo Năm -->
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col">
-            <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide mb-3">Thống kê tài liệu theo năm ban hành</h2>
-            <div class="relative w-full h-[180px]">
+          <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
+                <i class="fas fa-chart-column text-blue-600"></i> Ban hành theo năm
+              </h2>
+            </div>
+            <div class="relative w-full h-[220px]">
               <canvas id="chartYear"></canvas>
             </div>
           </div>
 
-
-          <!-- Biểu đồ 3: Theo Trạng Thái -->
-          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col">
-            <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide mb-3">Tỷ lệ trạng thái tài liệu</h2>
-            <div class="relative w-full h-[180px] flex items-center justify-center">
+          <!-- Biểu đồ 3: Theo Trạng Thái Hiệu lực -->
+          <div class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
+                <i class="fas fa-chart-donut text-emerald-600"></i> Tỷ lệ hiệu lực tài liệu
+              </h2>
+            </div>
+            <div class="relative w-full h-[220px] flex items-center justify-center">
               <canvas id="chartStatus"></canvas>
             </div>
           </div>
 
-
         </div>
         <!-- ================= KẾT THÚC KHU VỰC BIỂU ĐỒ ================= -->
+
+      </div>
 
 
 
@@ -589,8 +649,56 @@
           <!-- END THANH PHÂN TRANG -->
          
         </div>
-      </div>
+      <!-- ================= TRANG 3: LOOKER STUDIO BI VIEW ================= -->
+      <div id="view-looker-studio" class="hidden">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-4 mb-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-gray-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center p-2 bg-amber-50 text-amber-600 rounded-lg"><i class="fas fa-chart-line text-lg"></i></span>
+                <div>
+                  <h2 class="text-base font-bold text-gray-800 uppercase tracking-wide">Báo cáo Trực quan BI (Google Looker Studio)</h2>
+                  <p class="text-xs text-gray-500">Phân tích chuyên sâu tiến độ, chỉ số hiệu lực và phân bố tài liệu từ CSDL</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="refreshLookerFrame()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-md transition flex items-center gap-1.5">
+                <i class="fas fa-rotate-right"></i> Làm mới
+              </button>
+              <a id="looker-open-external" href="https://lookerstudio.google.com/" target="_blank" class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1.5 shadow-xs">
+                <i class="fas fa-up-right-from-square"></i> Mở toàn màn hình
+              </a>
+            </div>
+          </div>
 
+          <!-- Khung nhúng Looker Studio -->
+          <div class="mt-4 w-full h-[75vh] rounded-lg overflow-hidden border border-gray-200 bg-slate-50 relative flex items-center justify-center">
+            <iframe id="looker-iframe" 
+              src="" 
+              data-src=""
+              class="w-full h-full border-0 hidden" 
+              allowfullscreen 
+              sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+            </iframe>
+            <!-- Hướng dẫn cấu hình nếu chưa có link Looker Studio thực tế -->
+            <div id="looker-placeholder" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+              <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-xs">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Tích hợp Báo cáo Google Looker Studio</h3>
+              <p class="text-sm text-gray-600 max-w-md mb-4">Kết nối trực tiếp nguồn dữ liệu Google Sheets của bạn với Looker Studio để trực quan hóa biểu đồ BI tương tác cao, lọc nhiều chiều và xuất báo cáo tự động.</p>
+              <div class="flex flex-wrap gap-2 justify-center max-w-md w-full">
+                <input type="text" id="looker-url-input" placeholder="Dán liên kết nhúng Looker Studio (Embed URL)..." class="text-xs px-3 py-2 border border-gray-300 rounded-md flex-1 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                <button onclick="setLookerUrl()" class="text-xs px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-xs transition whitespace-nowrap">
+                  <i class="fas fa-link mr-1"></i> Tải báo cáo
+                </button>
+              </div>
+              <p class="text-[11px] text-gray-400 mt-3"><i class="fas fa-info-circle mr-1"></i> Mở Looker Studio &rarr; Chia sẻ &rarr; Nhúng báo cáo &rarr; Bật nhúng và sao chép Embed URL.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
 
 

@@ -93,38 +93,151 @@
 
 
 
+  /**
+   * THUẬT TOÁN TÍNH TOÁN & PHÂN CẤP CẢNH BÁO HIỆU LỰC THỜI GIAN THỰC
+   */
+  function evaluateDocumentExpiry(expiryDateStr, rawStatus) {
+    var rawStatusClean = rawStatus ? String(rawStatus).trim().toLowerCase() : "";
+    var isExplicitlyExpired = rawStatusClean.indexOf("hết hiệu lực") !== -1 && rawStatusClean !== "sắp hết hiệu lực";
+
+    if (!expiryDateStr || String(expiryDateStr).trim() === "" || expiryDateStr === "N/A" || expiryDateStr === "-") {
+      if (isExplicitlyExpired) {
+        return {
+          statusKey: 'expired',
+          statusText: 'Đã hết hiệu lực',
+          countdownText: 'Hết hiệu lực',
+          daysDiff: -1,
+          badgeClass: 'bg-rose-100 text-rose-800 border border-rose-300 font-semibold',
+          dotColor: 'bg-rose-500',
+          colorTheme: 'rose'
+        };
+      }
+      return {
+        statusKey: 'active',
+        statusText: 'Còn hiệu lực',
+        countdownText: 'Vô thời hạn',
+        daysDiff: 9999,
+        badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-medium',
+        dotColor: 'bg-emerald-500',
+        colorTheme: 'emerald'
+      };
+    }
+
+    var cleanStr = String(expiryDateStr).trim();
+    var expDate = null;
+
+    if (cleanStr.includes('/')) {
+      var parts = cleanStr.split('/');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        } else {
+          expDate = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        }
+      }
+    } else if (cleanStr.includes('-')) {
+      var parts = cleanStr.split('-');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          expDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        } else {
+          expDate = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        }
+      }
+    } else {
+      expDate = new Date(cleanStr);
+    }
+
+    if (!expDate || isNaN(expDate.getTime())) {
+      if (isExplicitlyExpired) {
+        return {
+          statusKey: 'expired',
+          statusText: 'Đã hết hiệu lực',
+          countdownText: 'Hết hiệu lực',
+          daysDiff: -1,
+          badgeClass: 'bg-rose-100 text-rose-800 border border-rose-300 font-semibold',
+          dotColor: 'bg-rose-500',
+          colorTheme: 'rose'
+        };
+      }
+      return {
+        statusKey: 'active',
+        statusText: rawStatus || 'Còn hiệu lực',
+        countdownText: 'Không xác định ngày',
+        daysDiff: 9999,
+        badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-medium',
+        dotColor: 'bg-emerald-500',
+        colorTheme: 'emerald'
+      };
+    }
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    expDate.setHours(0, 0, 0, 0);
+
+    var diffMs = expDate.getTime() - today.getTime();
+    var diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      var overdueDays = Math.abs(diffDays);
+      var isCritical = overdueDays > 30;
+      return {
+        statusKey: 'expired',
+        statusText: 'Đã hết hiệu lực',
+        countdownText: isCritical ? ('Quá hạn ' + overdueDays + ' ngày (Cần thanh tra)') : ('Quá hạn ' + overdueDays + ' ngày'),
+        daysDiff: diffDays,
+        badgeClass: isCritical 
+          ? 'bg-rose-100 text-rose-800 border border-rose-400 font-bold shadow-xs' 
+          : 'bg-rose-100 text-rose-700 border border-rose-300 font-medium',
+        dotColor: 'bg-rose-600',
+        colorTheme: 'rose'
+      };
+    } else if (diffDays <= 60) {
+      var countdownLabel = diffDays === 0 ? 'Hết hạn hôm nay' : ('Còn ' + diffDays + ' ngày');
+      return {
+        statusKey: 'expiring',
+        statusText: 'Sắp hết hiệu lực',
+        countdownText: countdownLabel,
+        daysDiff: diffDays,
+        badgeClass: 'bg-amber-100 text-amber-900 border border-amber-300 font-semibold shadow-xs',
+        dotColor: 'bg-amber-500',
+        colorTheme: 'amber'
+      };
+    } else {
+      return {
+        statusKey: 'active',
+        statusText: 'Còn hiệu lực',
+        countdownText: 'Còn ' + diffDays + ' ngày',
+        daysDiff: diffDays,
+        badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-medium',
+        dotColor: 'bg-emerald-500',
+        colorTheme: 'emerald'
+      };
+    }
+  }
+
   function renderStats(docs) {
     var countTotal = docs.length, countActive = 0, countExpiring = 0, countExpired = 0;
     docs.forEach(function(doc) {
-      var status = doc.status ? String(doc.status).trim().toLowerCase() : "";
-      if (status === "còn hiệu lực") countActive++;
-      else if (status === "sắp hết hiệu lực") countExpiring++;
-      else if (status.indexOf("hết hiệu lực") !== -1) countExpired++;
+      var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+      if (evalInfo.statusKey === 'active') countActive++;
+      else if (evalInfo.statusKey === 'expiring') countExpiring++;
+      else if (evalInfo.statusKey === 'expired') countExpired++;
     });
+
     var statTotal = document.getElementById('stat-total'); if (statTotal) statTotal.innerText = countTotal;
     var statActive = document.getElementById('stat-active'); if (statActive) statActive.innerText = countActive;
     var statExpiring = document.getElementById('stat-expiring'); if (statExpiring) statExpiring.innerText = countExpiring;
     var statExpired = document.getElementById('stat-expired'); if (statExpired) statExpired.innerText = countExpired;
   }
 
-
-
-
   function renderRecentTable(docs, isSearch) {
     var tbody = document.getElementById('table-recent-docs');
     if (!tbody) return;
     tbody.innerHTML = '';
 
-
-
-
-    // Lấy mốc thời gian 30 ngày trước tính từ hiện tại
     var thirtyDaysAgo = new Date().getTime() - (30 * 24 * 60 * 60 * 1000);
 
-
-
-
-    // Lọc danh sách tài liệu thuộc 30 ngày gần nhất (dựa trên ngày ban hành/cập nhật)
     var recentDocs = docs;
     if (!isSearch) {
       recentDocs = docs.filter(function(doc) {
@@ -134,22 +247,13 @@
       });
     }
 
-
-
-
     if (recentDocs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500">Không có tài liệu nào được cập nhật trong 30 ngày gần nhất.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-500 italic">Không có tài liệu nào được cập nhật trong 30 ngày gần nhất.</td></tr>';
       return;
     }
 
-
-
-
     var limit = isSearch ? 20 : 5;
     var adminClass = (currentUserRole === 'admin') ? '' : 'hidden';
-
-
-
 
     recentDocs.slice(0, limit).forEach(function(doc, index) {
       var dateDisplay = "N/A";
@@ -158,128 +262,105 @@
         if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
       }
 
-
-
-
-      var categoryColor = "bg-gray-100 text-gray-700";
-      var category = doc.category ? String(doc.category).toLowerCase() : "";
-      if (category.indexOf("công văn") !== -1) categoryColor = "bg-blue-100 text-blue-700";
-      else if (category.indexOf("quy định") !== -1 || category.indexOf("quy trình") !== -1) categoryColor = "bg-purple-100 text-purple-700";
-      else if (category.indexOf("hướng dẫn") !== -1) categoryColor = "bg-orange-100 text-orange-700";
-      else if (category.indexOf("thông báo") !== -1) categoryColor = "bg-green-100 text-green-700";
-
-
-
-
-      var statusText = doc.status ? String(doc.status).trim() : "Không xác định";
-      var statusLower = statusText.toLowerCase();
-      var statusColor = "bg-gray-100 text-gray-700";
-      if (statusLower === "còn hiệu lực") statusColor = "bg-green-100 text-green-700";
-      else if (statusLower === "sắp hết hiệu lực") statusColor = "bg-orange-100 text-orange-700";
-      else if (statusLower.indexOf("hết hiệu lực") !== -1) statusColor = "bg-red-100 text-red-700";
-
-
-
-
-      var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
       var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
       var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
+      
+      var catList = (Array.isArray(doc.categories) && doc.categories.length > 0) ? doc.categories : (doc.category ? [doc.category] : ['Khác']);
+      var categoryBadgesHtml = catList.map(function(c) {
+        return '<span class="inline-block bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] px-2 py-0.5 rounded-full font-medium transition-colors mr-1 mb-1">' +
+                 '<i class="fas fa-tag text-[9px] mr-1 text-blue-500"></i>' + c +
+               '</span>';
+      }).join('');
 
+      var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+      var statusBadgeHtml = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + evalInfo.badgeClass + '">' +
+                              '<span class="w-1.5 h-1.5 rounded-full ' + evalInfo.dotColor + '"></span>' +
+                              evalInfo.statusText +
+                            '</span>';
 
-
+      var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
 
       var tr = document.createElement('tr');
-      tr.className = "hover:bg-blue-50 transition-colors cursor-pointer group";
+      tr.className = "hover:bg-blue-50/50 transition-colors cursor-pointer group";
       tr.innerHTML =
-        '<td class="p-4" data-label="STT">' + (index + 1) + '</td>' +
-        '<td class="p-4 font-semibold text-blue-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
-        '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
-        '<td class="p-4" data-label="Danh mục"><span class="px-2.5 py-1 rounded-full text-xs font-medium ' + categoryColor + '">' + (doc.category || 'Khác') + '</span></td>' +
-        '<td class="p-4 text-gray-500" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
-        '<td class="p-4" data-label="Trạng thái"><span class="px-2.5 py-1 rounded-full text-xs font-medium ' + statusColor + '">' + statusText + '</span></td>' +
-        '<td class="p-4 text-center" data-label="Thao tác">' +
+        '<td class="p-3.5 text-gray-500 font-medium" data-label="STT">' + (index + 1) + '</td>' +
+        '<td class="p-3.5 font-semibold text-blue-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+        '<td class="p-3.5" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+        '<td class="p-3.5" data-label="Danh mục">' + categoryBadgesHtml + '</td>' +
+        '<td class="p-3.5 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
+        '<td class="p-3.5 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
+        '<td class="p-3.5 text-center whitespace-nowrap" data-label="Thao tác">' +
           '<div class="flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">' +
-            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600" title="Xem"><i class="fas fa-eye"></i></a>' +
-            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600" title="Tải"><i class="fas fa-download"></i></a>' +
-            '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600" title="Sửa"><i class="fas fa-edit"></i></button>' +
+            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1" title="Xem"><i class="fas fa-eye"></i></a>' +
+            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải"><i class="fas fa-download"></i></a>' +
+            '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1" title="Sửa"><i class="fas fa-edit"></i></button>' +
           '</div>' +
         '</td>';
       tbody.appendChild(tr);
     });
   }
 
-
-
-
   function renderWarningTables(docs) {
     var tbodyExpiring = document.getElementById('table-expiring-docs');
     var tbodyExpired = document.getElementById('table-expired-docs');
     if (!tbodyExpiring || !tbodyExpired) return;
 
-
-
-
     var expiringDocs = [];
     var expiredDocs = [];
+
     docs.forEach(function(doc) {
-      var status = doc.status ? String(doc.status).trim().toLowerCase() : "";
-      if (status === "sắp hết hiệu lực") expiringDocs.push(doc);
-      if (status.indexOf("hết hiệu lực") !== -1 && status !== "sắp hết hiệu lực") expiredDocs.push(doc);
+      var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+      if (evalInfo.statusKey === 'expiring') expiringDocs.push({ doc: doc, eval: evalInfo });
+      else if (evalInfo.statusKey === 'expired') expiredDocs.push({ doc: doc, eval: evalInfo });
     });
 
-
-
+    expiringDocs.sort(function(a, b) { return (a.eval.daysDiff - b.eval.daysDiff); });
+    expiredDocs.sort(function(a, b) { return (a.eval.daysDiff - b.eval.daysDiff); });
 
     var badgeExpiring = document.getElementById('badge-expiring'); if (badgeExpiring) badgeExpiring.innerText = expiringDocs.length;
     var badgeExpired = document.getElementById('badge-expired'); if (badgeExpired) badgeExpired.innerText = expiredDocs.length;
 
-
-
-
     function buildTableHTML(tbody, dataList, themeClass) {
       tbody.innerHTML = '';
       if (dataList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Tuyệt vời! Không có tài liệu nào.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500 italic">Tuyệt vời! Hiện không có tài liệu nào thuộc nhóm này.</td></tr>';
         return;
       }
 
-
-
-
-      dataList.slice(0, 5).forEach(function(doc) {
+      dataList.slice(0, 5).forEach(function(item) {
+        var doc = item.doc;
+        var evalInfo = item.eval;
         var dateDisplay = "N/A";
         if (doc.expiryDate) {
           var dateObj = new Date(doc.expiryDate);
           if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
+          else dateDisplay = String(doc.expiryDate);
         }
-        var statusText = doc.status ? String(doc.status).trim() : "Không xác định";
-        var statusLower = statusText.toLowerCase();
-        var statusColor = "bg-gray-100 text-gray-700";
-        if (statusLower === "còn hiệu lực") statusColor = "bg-green-100 text-green-700";
-        else if (statusLower === "sắp hết hiệu lực") statusColor = "bg-orange-100 text-orange-700";
-        else if (statusLower.indexOf("hết hiệu lực") !== -1) statusColor = "bg-red-100 text-red-700";
-
-
-
 
         var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
         var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
         var tr = document.createElement('tr');
-        tr.className = "hover:bg-" + themeClass + "-50 transition-colors";
+        tr.className = "hover:bg-" + themeClass + "-50/50 transition-colors";
         tr.innerHTML =
-          '<td class="p-3 font-medium text-' + themeClass + '-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
-          '<td class="p-3" data-label="Trích yếu"><div class="line-clamp-1 text-gray-700" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
-          '<td class="p-3 font-semibold text-' + themeClass + '-600" data-label="Ngày hết hạn">' + dateDisplay + '</td>' +
-          '<td class="p-3" data-label="Trạng thái"><span class="px-2.5 py-1 rounded-full text-xs font-medium ' + statusColor + '">' + statusText + '</span></td>' +
-          '<td class="p-3 text-center" data-label="Thao tác">' +
-            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 mr-2"><i class="fas fa-eye"></i></a>' +
-            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600"><i class="fas fa-download"></i></a>' +
+          '<td class="p-3 font-semibold text-blue-900" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+          '<td class="p-3" data-label="Trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+          '<td class="p-3 font-medium text-gray-600 whitespace-nowrap" data-label="Ngày hết hạn">' + dateDisplay + '</td>' +
+          '<td class="p-3 whitespace-nowrap" data-label="Cảnh báo hạn">' +
+            '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ' + evalInfo.badgeClass + '">' +
+              '<span class="w-1.5 h-1.5 rounded-full ' + evalInfo.dotColor + '"></span>' +
+              evalInfo.countdownText +
+            '</span>' +
+          '</td>' +
+          '<td class="p-3 text-center whitespace-nowrap" data-label="Thao tác">' +
+            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 mr-2 p-1" title="Xem văn bản"><i class="fas fa-eye"></i></a>' +
+            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải về"><i class="fas fa-download"></i></a>' +
           '</td>';
         tbody.appendChild(tr);
       });
     }
-    buildTableHTML(tbodyExpiring, expiringDocs, 'orange');
-    buildTableHTML(tbodyExpired, expiredDocs, 'red');
+
+    buildTableHTML(tbodyExpiring, expiringDocs, 'amber');
+    buildTableHTML(tbodyExpired, expiredDocs, 'rose');
   }
 
 
@@ -1263,18 +1344,21 @@
 
 
 
-      // -- Đếm Trạng thái --
-      var stat = doc.status ? String(doc.status).trim() : "Không xác định";
-      statusCounts[stat] = (statusCounts[stat] || 0) + 1;
+      // -- Đếm Trạng thái hiệu lực động --
+      var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+      if (evalInfo.statusKey === 'active') {
+        statusCounts["Còn hiệu lực"] = (statusCounts["Còn hiệu lực"] || 0) + 1;
+      } else if (evalInfo.statusKey === 'expiring') {
+        statusCounts["Sắp hết hiệu lực"] = (statusCounts["Sắp hết hiệu lực"] || 0) + 1;
+      } else if (evalInfo.statusKey === 'expired') {
+        statusCounts["Đã hết hiệu lực"] = (statusCounts["Đã hết hiệu lực"] || 0) + 1;
+      }
     });
 
-
-
-
-    // 2. VẼ BIỂU ĐỒ 1: THEO LOẠI (GOM NHÓM MỚI)
+    // 2. VẼ BIỂU ĐỒ 1: THEO LOẠI
     var ctxCat = document.getElementById('chartCategory');
     if (ctxCat) {
-      var catColors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#ec4899', '#06b6d4', '#84cc16', '#6366f1', '#14b8a6', '#f97316', '#6b7280'];
+      var catColors = ['#2563eb', '#7c3aed', '#d97706', '#059669', '#dc2626', '#db2777', '#0891b2', '#65a30d', '#4f46e5', '#0d9488', '#ea580c', '#64748b'];
      
       if (chartCatInstance) chartCatInstance.destroy();
       chartCatInstance = new Chart(ctxCat, {
@@ -1284,26 +1368,23 @@
           datasets: [{
             data: Object.values(catCounts),
             backgroundColor: catColors.slice(0, Object.keys(catCounts).length),
-            borderWidth: 2, hoverOffset: 4
+            borderWidth: 2, hoverOffset: 6
           }]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } }
+            legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } }
           }
         }
       });
     }
 
-
-
-
     // 3. VẼ BIỂU ĐỒ 2: THEO NĂM (BAR)
     var ctxYear = document.getElementById('chartYear');
     if (ctxYear) {
       var sortedYears = Object.keys(yearCounts).sort();
-      var yearData = sortedYears.map(y => yearCounts[y]);
+      var yearData = sortedYears.map(function(y) { return yearCounts[y]; });
      
       if (chartYearInstance) chartYearInstance.destroy();
       chartYearInstance = new Chart(ctxYear, {
@@ -1313,9 +1394,9 @@
           datasets: [{
             label: 'Số lượng',
             data: yearData,
-            backgroundColor: '#3b82f6',
-            borderRadius: 4,
-            barThickness: 24
+            backgroundColor: '#2563eb',
+            borderRadius: 6,
+            barThickness: 22
           }]
         },
         options: {
@@ -1329,26 +1410,19 @@
       });
     }
 
-
-
-
-    // 4. VẼ BIỂU ĐỒ 3: THEO TRẠNG THÁI
+    // 4. VẼ BIỂU ĐỒ 3: THEO TRẠNG THÁI HIỆU LỰC (3 MÀU CHUẨN XANH - CAM - ĐỎ)
     var ctxStatus = document.getElementById('chartStatus');
     if (ctxStatus) {
-      var labelsStatus = Object.keys(statusCounts);
-      var dataStatus = Object.values(statusCounts);
+      var labelsStatus = Object.keys(statusCounts).filter(function(k) { return statusCounts[k] > 0; });
+      var dataStatus = labelsStatus.map(function(k) { return statusCounts[k]; });
      
       var bgColors = labelsStatus.map(function(label) {
         var lbl = label.toLowerCase();
-        // Đã đổi sang màu xanh lá đậm, sâu và chuyên nghiệp hơn (#059669)
-        if (lbl === 'còn hiệu lực') return '#059669';
-        if (lbl === 'sắp hết hiệu lực') return '#f59e0b';
-        if (lbl.indexOf('hết hiệu lực') !== -1 && lbl !== 'sắp hết hiệu lực') return '#ef4444';
+        if (lbl.indexOf('còn') !== -1) return '#059669'; // Xanh lá
+        if (lbl.indexOf('sắp') !== -1) return '#f59e0b'; // Vàng Cam
+        if (lbl.indexOf('hết') !== -1) return '#dc2626'; // Đỏ
         return '#8b5cf6';
       });
-
-
-
 
       if (chartStatusInstance) chartStatusInstance.destroy();
       chartStatusInstance = new Chart(ctxStatus, {
@@ -1359,13 +1433,13 @@
             data: dataStatus,
             backgroundColor: bgColors,
             borderWidth: 2,
-            hoverOffset: 4
+            hoverOffset: 6
           }]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } }
+            legend: { position: 'right', labels: { boxWidth: 12, padding: 12 } }
           }
         }
       });
