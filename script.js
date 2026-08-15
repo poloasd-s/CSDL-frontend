@@ -170,7 +170,7 @@ function loadDashboardData() {
 
       // MAPPING: Đổi key từ Tiếng Việt (từ Sheets/MongoDB) sang Tiếng Anh (cho frontend)
       const mappedData = data.map(item => {
-        let mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
+        let mainCat = item["Danh mục"] || item.category || (item.danhMuc && item.danhMuc !== "Khác" ? item.danhMuc : "") || "Khác";
         
         // Tạm thời chỉ hiển thị Main tag (Danh mục)
         let rawCatList = [mainCat];
