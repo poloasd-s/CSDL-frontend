@@ -171,49 +171,29 @@ function loadDashboardData() {
       // MAPPING: Đổi key từ Tiếng Việt (từ Sheets/MongoDB) sang Tiếng Anh (cho frontend)
       const mappedData = data.map(item => {
         let mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
-        let rawCatList = [mainCat]; // Cột Danh mục sẽ lấy làm tag đầu tiên
-
-        // Tự động nhận diện tag từ cột Từ khóa (Keywords)
-        let tuKhoaStr = item["Từ khóa"] || item.tuKhoa || item.keywords || "";
-        if (tuKhoaStr) {
-          tuKhoaStr.split(/[,;]/).forEach(k => {
-            let tag = k.trim();
-            if (tag && !rawCatList.some(c => c.toLowerCase() === tag.toLowerCase())) {
-              rawCatList.push(tag);
-            }
-          });
-        }
-
-        // Kế thừa các tags từ mảng categories nếu có (từ Node.js)
-        if (item.categories && Array.isArray(item.categories)) {
-          item.categories.forEach(c => {
-            let tag = typeof c === 'string' ? c.trim() : String(c).trim();
-            if (tag && !rawCatList.some(exist => exist.toLowerCase() === tag.toLowerCase())) {
-              rawCatList.push(tag);
-            }
-          });
-        }
+        
+        // Tạm thời chỉ hiển thị Main tag trước, Multi-tag để người dùng tự thêm khi upload/sửa
+        let rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
+          ? item.categories.slice()
+          : [mainCat];
 
         // 1. Tự động nhận diện tài liệu Annex để phân vào danh mục ICAO -> ANNEX
         let contextStr = (
           (item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "") + " " +
           (item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "") + " " +
           (item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "") + " " +
-          mainCat + " " +
-          rawCatList.join(" ")
+          mainCat
         ).toLowerCase();
 
         let isAnnex = contextStr.includes("annex");
-        let isIcao = contextStr.includes("icao") || isAnnex;
 
         if (isAnnex) {
-          if (!rawCatList.some(c => c.toUpperCase() === 'ANNEX')) rawCatList.push('ANNEX');
-          if (!rawCatList.some(c => c.toUpperCase() === 'ICAO')) rawCatList.push('ICAO');
           if (mainCat === 'Khác' || mainCat.toUpperCase() === 'ICAO' || mainCat.toLowerCase().includes('annex')) {
             mainCat = 'ANNEX';
+            if (rawCatList.length === 1) {
+              rawCatList = ['ANNEX'];
+            }
           }
-        } else if (isIcao) {
-          if (!rawCatList.some(c => c.toUpperCase() === 'ICAO')) rawCatList.push('ICAO');
         }
 
         if (rawCatList.length === 0) {
@@ -1270,7 +1250,6 @@ function submitUpload() {
         trichYeu: trichYeu,
         categories: catList,
         danhMuc: catList[0],
-        tuKhoa: catList.slice(1).join(', '),
         ngayBanHanh: ngayBanHanh,
         ngayHetHan: ngayHetHan,
         ghiChu: ghiChu,
@@ -1376,7 +1355,6 @@ function submitEdit() {
     tenTaiLieu: fnInput ? fnInput.value : '',
     categories: catList,
     danhMuc: catList[0],
-    tuKhoa: catList.slice(1).join(', '),
     trichYeu: document.getElementById('edit-trichyeu').value,
     ngayBanHanh: document.getElementById('edit-ngay').value,
     ngayHetHan: document.getElementById('edit-ngayhethan').value,

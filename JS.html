@@ -72,28 +72,11 @@
           var rawDocs = typeof data === 'string' ? JSON.parse(data) : data;
           allDocuments = (rawDocs || []).map(function(item) {
             var mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
-            var rawCatList = [mainCat]; // Cột Danh mục sẽ lấy làm tag đầu tiên
-
-            // Tự động nhận diện tag từ cột Từ khóa (Keywords)
-            var tuKhoaStr = item["Từ khóa"] || item.tuKhoa || item.keywords || "";
-            if (tuKhoaStr) {
-              tuKhoaStr.split(/[,;]/).forEach(function(k) {
-                var tag = k.trim();
-                if (tag && !rawCatList.some(function(c) { return c.toLowerCase() === tag.toLowerCase(); })) {
-                  rawCatList.push(tag);
-                }
-              });
-            }
-
-            // Kế thừa các tags từ mảng categories nếu có
-            if (item.categories && Array.isArray(item.categories)) {
-              item.categories.forEach(function(c) {
-                var tag = typeof c === 'string' ? c.trim() : String(c).trim();
-                if (tag && !rawCatList.some(function(exist) { return exist.toLowerCase() === tag.toLowerCase(); })) {
-                  rawCatList.push(tag);
-                }
-              });
-            }
+            
+            // Tạm thời chỉ hiển thị Main tag trước, Multi-tag để người dùng tự thêm khi upload/sửa
+            var rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
+              ? item.categories.slice()
+              : [mainCat];
 
             var docNumber = item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "";
             var fileName = item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "";
@@ -105,21 +88,18 @@
               fileName + " " +
               docNumber + " " +
               abstract + " " +
-              mainCat + " " +
-              rawCatList.join(" ")
+              mainCat
             ).toLowerCase();
 
             var isAnnex = contextStr.indexOf("annex") !== -1;
-            var isIcao = contextStr.indexOf("icao") !== -1 || isAnnex;
 
             if (isAnnex) {
-              if (!rawCatList.some(function(c) { return c.toUpperCase() === 'ANNEX'; })) rawCatList.push('ANNEX');
-              if (!rawCatList.some(function(c) { return c.toUpperCase() === 'ICAO'; })) rawCatList.push('ICAO');
               if (mainCat === 'Khác' || mainCat.toUpperCase() === 'ICAO' || mainCat.toLowerCase().indexOf('annex') !== -1) {
                 mainCat = 'ANNEX';
+                if (rawCatList.length === 1) {
+                  rawCatList = ['ANNEX'];
+                }
               }
-            } else if (isIcao) {
-              if (!rawCatList.some(function(c) { return c.toUpperCase() === 'ICAO'; })) rawCatList.push('ICAO');
             }
 
             if (rawCatList.length === 0) {
