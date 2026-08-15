@@ -170,11 +170,29 @@ function loadDashboardData() {
 
       // MAPPING: Đổi key từ Tiếng Việt (từ Sheets/MongoDB) sang Tiếng Anh (cho frontend)
       const mappedData = data.map(item => {
-        let rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
-          ? [...item.categories]
-          : (item["Danh mục"] || item.danhMuc || item.category ? [item["Danh mục"] || item.danhMuc || item.category] : []);
-
         let mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
+        let rawCatList = [mainCat]; // Cột Danh mục sẽ lấy làm tag đầu tiên
+
+        // Tự động nhận diện tag từ cột Từ khóa (Keywords)
+        let tuKhoaStr = item["Từ khóa"] || item.tuKhoa || item.keywords || "";
+        if (tuKhoaStr) {
+          tuKhoaStr.split(/[,;]/).forEach(k => {
+            let tag = k.trim();
+            if (tag && !rawCatList.some(c => c.toLowerCase() === tag.toLowerCase())) {
+              rawCatList.push(tag);
+            }
+          });
+        }
+
+        // Kế thừa các tags từ mảng categories nếu có (từ Node.js)
+        if (item.categories && Array.isArray(item.categories)) {
+          item.categories.forEach(c => {
+            let tag = typeof c === 'string' ? c.trim() : String(c).trim();
+            if (tag && !rawCatList.some(exist => exist.toLowerCase() === tag.toLowerCase())) {
+              rawCatList.push(tag);
+            }
+          });
+        }
 
         // 1. Tự động nhận diện tài liệu Annex để phân vào danh mục ICAO -> ANNEX
         let contextStr = (
@@ -1252,6 +1270,7 @@ function submitUpload() {
         trichYeu: trichYeu,
         categories: catList,
         danhMuc: catList[0],
+        tuKhoa: catList.slice(1).join(', '),
         ngayBanHanh: ngayBanHanh,
         ngayHetHan: ngayHetHan,
         ghiChu: ghiChu,
@@ -1357,6 +1376,7 @@ function submitEdit() {
     tenTaiLieu: fnInput ? fnInput.value : '',
     categories: catList,
     danhMuc: catList[0],
+    tuKhoa: catList.slice(1).join(', '),
     trichYeu: document.getElementById('edit-trichyeu').value,
     ngayBanHanh: document.getElementById('edit-ngay').value,
     ngayHetHan: document.getElementById('edit-ngayhethan').value,

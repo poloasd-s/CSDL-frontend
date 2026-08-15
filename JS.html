@@ -71,11 +71,29 @@
         try {
           var rawDocs = typeof data === 'string' ? JSON.parse(data) : data;
           allDocuments = (rawDocs || []).map(function(item) {
-            var rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
-                ? item.categories.slice()
-                : (item["Danh mục"] || item.danhMuc || item.category ? [item["Danh mục"] || item.danhMuc || item.category] : []);
-            
             var mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
+            var rawCatList = [mainCat]; // Cột Danh mục sẽ lấy làm tag đầu tiên
+
+            // Tự động nhận diện tag từ cột Từ khóa (Keywords)
+            var tuKhoaStr = item["Từ khóa"] || item.tuKhoa || item.keywords || "";
+            if (tuKhoaStr) {
+              tuKhoaStr.split(/[,;]/).forEach(function(k) {
+                var tag = k.trim();
+                if (tag && !rawCatList.some(function(c) { return c.toLowerCase() === tag.toLowerCase(); })) {
+                  rawCatList.push(tag);
+                }
+              });
+            }
+
+            // Kế thừa các tags từ mảng categories nếu có
+            if (item.categories && Array.isArray(item.categories)) {
+              item.categories.forEach(function(c) {
+                var tag = typeof c === 'string' ? c.trim() : String(c).trim();
+                if (tag && !rawCatList.some(function(exist) { return exist.toLowerCase() === tag.toLowerCase(); })) {
+                  rawCatList.push(tag);
+                }
+              });
+            }
 
             var docNumber = item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "";
             var fileName = item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "";
