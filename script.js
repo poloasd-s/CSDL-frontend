@@ -495,13 +495,65 @@ function renderRecentTable(docs, isSearch) {
       '<td class="p-3.5 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
       '<td class="p-3.5 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
       '<td class="p-3.5 text-center whitespace-nowrap" data-label="Thao tác">' +
-      '<div class="flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">' +
-      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1" title="Xem"><i class="fas fa-eye"></i></a>' +
-      '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải"><i class="fas fa-download"></i></a>' +
-      '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1" title="Sửa"><i class="fas fa-edit"></i></button>' +
+      '<div class="flex items-center justify-center gap-3 action-btns">' +
+      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1 touch-target" title="Xem"><i class="fas fa-eye"></i></a>' +
+      '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1 touch-target" title="Tải"><i class="fas fa-download"></i></a>' +
+      '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1 touch-target" title="Sửa"><i class="fas fa-edit"></i></button>' +
       '</div>' +
       '</td>';
     tbody.appendChild(tr);
+  });
+
+  // Render mobile cards for recent docs
+  renderMobileCards('cards-recent-docs', recentDocs.slice(0, limit));
+}
+
+// --- HÀM RENDER MOBILE CARD LIST ---
+function renderMobileCards(containerId, docs) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (docs.length === 0) {
+    container.innerHTML = '<div class="text-center text-gray-500 py-6 text-sm italic">Không có tài liệu nào.</div>';
+    return;
+  }
+
+  docs.forEach(function(doc) {
+    var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+    var dateDisplay = 'N/A';
+    if (doc.effectiveDate) {
+      var dObj = new Date(doc.effectiveDate);
+      if (!isNaN(dObj.getTime())) dateDisplay = dObj.toLocaleDateString('vi-VN');
+    }
+
+    var fileExt = 'TL';
+    if (doc.fileName) {
+      var ext = doc.fileName.split('.').pop().toUpperCase();
+      if (['PDF','DOC','DOCX','XLS','XLSX','PPT','PPTX'].indexOf(ext) !== -1) fileExt = ext;
+    }
+
+    var statusClass = evalInfo.statusKey === 'active' ? 'active' : (evalInfo.statusKey === 'expiring' ? 'expiring' : 'expired');
+    var catList = (Array.isArray(doc.categories) && doc.categories.length > 0) ? doc.categories : (doc.category ? [doc.category] : []);
+    var catText = catList.length > 0 ? catList[0] : '';
+    var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || '';
+
+    var card = document.createElement('article');
+    card.className = 'mobile-record-card';
+    card.innerHTML =
+      '<div class="file-icon">' + fileExt + '</div>' +
+      '<div class="record-content">' +
+        '<h3>' + (doc.fileName || doc.abstract || 'Chưa có tên') + '</h3>' +
+        '<p class="record-meta">' + (doc.docNumber || '') + (doc.docNumber && dateDisplay !== 'N/A' ? ' · ' : '') + (dateDisplay !== 'N/A' ? dateDisplay : '') + (catText ? ' · ' + catText : '') + '</p>' +
+        '<span class="status-badge ' + statusClass + '">' +
+          '<span style="width:6px;height:6px;border-radius:50%;display:inline-block;" class="' + evalInfo.dotColor + '"></span>' +
+          evalInfo.statusText +
+        '</span>' +
+      '</div>' +
+      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="record-more" aria-label="Xem tài liệu">' +
+        '<i class="fas fa-eye"></i>' +
+      '</a>';
+    container.appendChild(card);
   });
 }
 
@@ -570,6 +622,10 @@ function renderWarningTables(docs) {
 
   buildTableHTML(tbodyExpiring, expiringDocs, 'amber');
   buildTableHTML(tbodyExpired, expiredDocs, 'rose');
+
+  // Render mobile cards for warning tables
+  renderMobileCards('cards-expiring-docs', expiringDocs.slice(0, 5).map(function(i) { return i.doc; }));
+  renderMobileCards('cards-expired-docs', expiredDocs.slice(0, 5).map(function(i) { return i.doc; }));
 }
 
 
@@ -791,11 +847,14 @@ function navigateTo(viewId, categoryName, activeMenuId) {
   }
 
   // Tự động đóng menu trên Mobile
-  if (window.innerWidth < 768) {
+  if (window.innerWidth < 1024) {
     var sidebar = document.getElementById('sidebar');
-    if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+    var overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) {
+      sidebar.classList.remove('mobile-open');
       sidebar.classList.add('-translate-x-full');
     }
+    if (overlay) overlay.classList.remove('active');
   }
 }
 
@@ -1037,16 +1096,23 @@ function displayCurrentPage() {
       '<td class="p-4 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
       '<td class="p-4" data-label="Danh mục / Tags">' + categoryBadgesHtml + '</td>' +
       '<td class="p-4 text-center whitespace-nowrap" data-label="Thao tác">' +
-      '<div class="flex items-center justify-center gap-3">' +
-      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1" title="Xem"><i class="fas fa-eye"></i></a>' +
-      '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải"><i class="fas fa-download"></i></a>' +
-      '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1" title="Sửa"><i class="fas fa-edit"></i></button>' +
+      '<div class="flex items-center justify-center gap-3 action-btns">' +
+      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1 touch-target" title="Xem"><i class="fas fa-eye"></i></a>' +
+      '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1 touch-target" title="Tải"><i class="fas fa-download"></i></a>' +
+      '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1 touch-target" title="Sửa"><i class="fas fa-edit"></i></button>' +
       '</div>' +
       '</td>';
 
     tr.innerHTML = htmlString;
     tbody.appendChild(tr);
   });
+
+  // Render mobile cards
+  renderMobileCards('cards-danh-sach-docs', pageData);
+
+  // Update mobile page number
+  var mobilePageNum = document.getElementById('page-number-mobile');
+  if (mobilePageNum) mobilePageNum.innerText = currentPage;
 }
 
 
@@ -1391,27 +1457,25 @@ function exportToExcel() {
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   XLSX.writeFile(workbook, fileName);
 }
-// --- MODULE ĐIỀU KHIỂN SIDEBAR TRÊN MOBILE ---
-function toggleSidebar() {
-  // 1. Trượt Sidebar ra/vào
-  const sidebar = document.getElementById('sidebar');
-  sidebar.classList.toggle('-translate-x-full');
-
-  // 2. Đẩy phần nội dung chính (Lệnh md:ml-64 chỉ có tác dụng trên máy tính/iPad)
-  const mainContent = document.getElementById('my-content');
-  if (mainContent) {
-    mainContent.classList.toggle('md:ml-64');
-  }
-
-  // 3. Xử lý nút 3 gạch thông minh theo thiết bị
-  const btn = document.getElementById('hamburger-btn');
-  if (btn) {
-    // Nếu là màn hình điện thoại (dưới 768px), cho nút tự dịch chuyển để không bị Sidebar đè
-    if (window.innerWidth < 768) {
-      btn.classList.toggle('translate-x-64');
+// --- MODULE ĐIỀU KHIỂN SIDEBAR ---
+if (typeof toggleSidebar === 'undefined') {
+  function toggleSidebar() {
+    if (window.innerWidth >= 1024) {
+      document.body.classList.toggle('sidebar-collapsed');
+      var isCollapsed = document.body.classList.contains('sidebar-collapsed');
+      localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
     } else {
-      // Nếu là màn hình lớn, dọn dẹp lệnh tự dịch chuyển để tránh lỗi "đẩy kép"
-      btn.classList.remove('translate-x-64');
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebar-overlay');
+      if (sidebar.classList.contains('mobile-open')) {
+        sidebar.classList.remove('mobile-open');
+        sidebar.classList.add('-translate-x-full');
+        if (overlay) overlay.classList.remove('active');
+      } else {
+        sidebar.classList.add('mobile-open');
+        sidebar.classList.remove('-translate-x-full');
+        if (overlay) overlay.classList.add('active');
+      }
     }
   }
 }
@@ -1540,10 +1604,26 @@ var chartYearInstance = null;
 var chartStatusInstance = null;
 
 function renderCharts(docs) {
-  if (typeof Chart === 'undefined') return;
+  // Chart.js fail-soft: show fallback if library not loaded
+  if (typeof Chart === 'undefined') {
+    ['chartCategory', 'chartYear', 'chartStatus'].forEach(function(id) {
+      var canvas = document.getElementById(id);
+      var fallback = document.getElementById(id + '-fallback');
+      if (canvas) canvas.style.display = 'none';
+      if (fallback) fallback.classList.remove('hidden');
+    });
+    return;
+  }
 
-  Chart.defaults.font.family = '"Times New Roman", Times, serif';
-  Chart.defaults.font.size = 13;
+  ['chartCategory', 'chartYear', 'chartStatus'].forEach(function(id) {
+    var canvas = document.getElementById(id);
+    var fallback = document.getElementById(id + '-fallback');
+    if (canvas) canvas.style.display = 'block';
+    if (fallback) fallback.classList.add('hidden');
+  });
+
+  Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+  Chart.defaults.font.size = 12;
 
   // --- BỘ TỪ ĐIỂN GOM NHÓM THÔNG MINH ---
   var categoryMapping = {
