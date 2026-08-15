@@ -686,45 +686,31 @@ function executeSearch() {
 
 // --- HÀM LỌC NHANH KHI CLICK VÀO CÁC THẺ KPI TRÊN DASHBOARD ---
 function filterByExpiryCard(statusKey) {
-  var viewDash = document.getElementById('view-dashboard');
-  var viewList = document.getElementById('view-danh-sach');
-  var viewLooker = document.getElementById('view-looker-studio');
-  if (viewDash) viewDash.classList.add('hidden');
-  if (viewLooker) viewLooker.classList.add('hidden');
-  if (viewList) viewList.classList.remove('hidden');
+  var title = "Tất cả tài liệu";
+  if (statusKey === 'active') title = "Tài liệu còn hiệu lực";
+  else if (statusKey === 'expiring') title = "Tài liệu sắp hết hiệu lực";
+  else if (statusKey === 'expired') title = "Tài liệu đã hết hiệu lực";
 
-  // Xóa active trên tất cả menu
-  document.querySelectorAll('.menu-link, .menu-sub-link').forEach(function (link) {
-    if (link.classList.contains('menu-link')) {
-      link.className = "menu-link flex items-center gap-3 px-4 py-2 hover:bg-blue-800 text-gray-300 border-l-4 border-transparent cursor-pointer transition-colors text-sm";
-    } else {
-      link.className = "menu-sub-link block pl-14 pr-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-blue-800 cursor-pointer border-l-4 border-transparent";
-    }
-  });
+  navigateTo('danh-sach', title, 'menu-all-docs');
 
-  var titleEl = document.getElementById('title-danh-sach');
   var statusSelect = document.getElementById('filter-status');
 
   if (statusKey === 'all') {
-    if (titleEl) titleEl.innerText = "Tất cả tài liệu";
     baseCategoryList = allDocuments;
     if (statusSelect) statusSelect.value = 'all';
   } else if (statusKey === 'active') {
-    if (titleEl) titleEl.innerText = "Tài liệu còn hiệu lực (> 60 ngày / Vô thời hạn)";
     baseCategoryList = allDocuments.filter(function (doc) {
       var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
       return evalInfo.statusKey === 'active';
     });
     if (statusSelect) statusSelect.value = 'còn hiệu lực';
   } else if (statusKey === 'expiring') {
-    if (titleEl) titleEl.innerText = "Tài liệu sắp hết hiệu lực (Đếm ngược 30-60 ngày)";
     baseCategoryList = allDocuments.filter(function (doc) {
       var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
       return evalInfo.statusKey === 'expiring';
     });
     if (statusSelect) statusSelect.value = 'sắp hết hiệu lực';
   } else if (statusKey === 'expired') {
-    if (titleEl) titleEl.innerText = "Tài liệu đã hết hiệu lực / Cần thanh tra gấp";
     baseCategoryList = allDocuments.filter(function (doc) {
       var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
       return evalInfo.statusKey === 'expired';
@@ -805,7 +791,34 @@ function toggleSubMenu(menuId, iconId) {
   }
 }
 
-function navigateTo(viewId, categoryName, activeMenuId) {
+function updateBottomNavActive(viewId) {
+  var btns = document.querySelectorAll('.mobile-bottom-nav button');
+  btns.forEach(function(b) { b.classList.remove('active'); });
+  if (viewId === 'dashboard') {
+    var homeBtn = document.getElementById('bottom-nav-home');
+    if (homeBtn) homeBtn.classList.add('active');
+  } else if (viewId === 'danh-sach') {
+    var docsBtn = document.getElementById('bottom-nav-docs');
+    if (docsBtn) docsBtn.classList.add('active');
+  }
+}
+
+function navigateTo(viewId, categoryName, activeMenuId, isFromPopstate) {
+  // Push state to browser history if not coming from popstate (back/forward)
+  if (!isFromPopstate) {
+    var state = { viewId: viewId, categoryName: categoryName, activeMenuId: activeMenuId };
+    var hash = '#' + viewId + (categoryName ? '-' + encodeURIComponent(categoryName) : '');
+    try {
+      if (history.state && history.state.viewId === viewId && history.state.categoryName === categoryName) {
+        // Tránh trùng lặp
+      } else {
+        history.pushState(state, '', hash);
+      }
+    } catch (e) {
+      console.warn('History pushState:', e);
+    }
+  }
+
   var viewDash = document.getElementById('view-dashboard');
   var viewList = document.getElementById('view-danh-sach');
   var viewLooker = document.getElementById('view-looker-studio');
@@ -832,10 +845,15 @@ function navigateTo(viewId, categoryName, activeMenuId) {
     }
   }
 
+  // Đồng bộ trạng thái active trên Bottom Navigation Mobile
+  updateBottomNavActive(viewId);
+
   if (viewId === 'dashboard' && viewDash) {
     viewDash.classList.remove('hidden');
     var searchInput = document.getElementById('search-input');
     if (searchInput) searchInput.value = '';
+    var searchInputMobile = document.getElementById('search-input-mobile');
+    if (searchInputMobile) searchInputMobile.value = '';
   } else if (viewId === 'danh-sach' && viewList) {
     viewList.classList.remove('hidden');
     var titleEl = document.getElementById('title-danh-sach');
@@ -856,6 +874,9 @@ function navigateTo(viewId, categoryName, activeMenuId) {
     }
     if (overlay) overlay.classList.remove('active');
   }
+
+  // Cuộn mượt lên đầu trang khi đổi màn hình
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 
@@ -1830,5 +1851,125 @@ function realTimeSearch() {
     displayCurrentPage();
   }
 }
+
+// =========================================================================
+// === MODULE: ĐIỀU HƯỚNG CỬ CHỈ VUỐT & LỊCH SỬ DUYỆT TRANG (SWIPE & POPSTATE) ===
+// =========================================================================
+(function initMobileGestureAndHistoryNavigation() {
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchStartTime = 0;
+
+  // Lắng nghe bắt đầu chạm màn hình
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }
+  }, { passive: true });
+
+  // Lắng nghe khi nhấc ngón tay (kết thúc vuốt)
+  document.addEventListener('touchend', function (e) {
+    if (e.changedTouches.length === 1 && window.innerWidth < 1024) {
+      var touchEndX = e.changedTouches[0].clientX;
+      var touchEndY = e.changedTouches[0].clientY;
+      var deltaX = touchEndX - touchStartX;
+      var deltaY = touchEndY - touchStartY;
+      var duration = Date.now() - touchStartTime;
+
+      // Không kích hoạt nếu chạm/vuốt trên ô nhập liệu (input, textarea, select)
+      var target = e.target;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        return;
+      }
+
+      // Kiểm tra điều kiện cử chỉ vuốt ngang rõ ràng:
+      // - Khoảng cách X > 70px
+      // - Độ lệch dọc Y < 65px (tránh nhầm với thao tác cuộn dọc)
+      // - Thời gian vuốt < 500ms
+      // - Góc vuốt ngang chiếm ưu thế: |deltaX| > |deltaY| * 1.4
+      if (Math.abs(deltaX) > 70 && Math.abs(deltaY) < 65 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4 && duration < 500) {
+        if (deltaX > 0) {
+          // 👉 VUỐT SANG PHẢI (TRÁI SANG PHẢI): BACK (LÙI LẠI)
+          handleGestureBack();
+        } else {
+          // 👈 VUỐT SANG TRÁI (PHẢI SANG TRÁI): FORWARD (TIẾN TỚI)
+          handleGestureForward();
+        }
+      }
+    }
+  }, { passive: true });
+
+  function handleGestureBack() {
+    // 1. Nếu Drawer Sidebar đang mở -> Đóng Sidebar trước
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('mobile-open')) {
+      toggleSidebar();
+      return;
+    }
+    // 2. Nếu Modal Thêm mới đang mở -> Đóng Modal
+    var uploadModal = document.getElementById('upload-modal');
+    if (uploadModal && !uploadModal.classList.contains('hidden')) {
+      closeModal();
+      return;
+    }
+    // 3. Nếu Modal Sửa đang mở -> Đóng Modal
+    var editModal = document.getElementById('edit-modal');
+    if (editModal && !editModal.classList.contains('hidden')) {
+      closeEditModal();
+      return;
+    }
+    // 4. Nếu có lịch sử trình duyệt -> Quay lại trang trước
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Nếu đang ở màn hình khác Dashboard và không còn history -> về Dashboard
+      var viewDash = document.getElementById('view-dashboard');
+      if (viewDash && viewDash.classList.contains('hidden')) {
+        navigateTo('dashboard', null, 'menu-dashboard');
+      }
+    }
+  }
+
+  function handleGestureForward() {
+    // 1. Nếu Sidebar đang mở -> Đóng Sidebar
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('mobile-open')) {
+      toggleSidebar();
+      return;
+    }
+    // 2. Tiến tới trang tiếp theo trong lịch sử
+    window.history.forward();
+  }
+
+  // Lắng nghe sự kiện Popstate khi bấm nút Back trên điện thoại / vuốt cạnh hệ điều hành
+  window.addEventListener('popstate', function (e) {
+    // Đóng các modal nếu đang mở
+    var uploadModal = document.getElementById('upload-modal');
+    if (uploadModal && !uploadModal.classList.contains('hidden')) {
+      uploadModal.classList.add('hidden');
+      uploadModal.classList.remove('flex');
+    }
+    var editModal = document.getElementById('edit-modal');
+    if (editModal && !editModal.classList.contains('hidden')) {
+      editModal.classList.add('hidden');
+      editModal.classList.remove('flex');
+    }
+
+    if (e.state && e.state.viewId) {
+      navigateTo(e.state.viewId, e.state.categoryName, e.state.activeMenuId, true);
+    } else {
+      // Khôi phục về trang chủ nếu rỗng state
+      navigateTo('dashboard', null, 'menu-dashboard', true);
+    }
+  });
+
+  // Gán state ban đầu cho trang web
+  if (!history.state) {
+    history.replaceState({ viewId: 'dashboard', categoryName: null, activeMenuId: 'menu-dashboard' }, '', '#dashboard');
+  }
+})();
+
 
 

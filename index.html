@@ -1187,19 +1187,19 @@
 
   <!-- ================= BOTTOM NAVIGATION (MOBILE) ================= -->
   <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
-    <button onclick="navigateTo('dashboard', null, 'menu-dashboard'); setActiveBottomNav(this)" class="active" aria-label="Trang chủ">
+    <button id="bottom-nav-home" onclick="navigateTo('dashboard', null, 'menu-dashboard'); setActiveBottomNav(this)" class="active" aria-label="Trang chủ">
       <i class="fas fa-home"></i>
       <span>Trang chủ</span>
     </button>
-    <button onclick="navigateTo('danh-sach', 'Tất cả tài liệu', 'menu-all-docs'); setActiveBottomNav(this)" aria-label="Tài liệu">
+    <button id="bottom-nav-docs" onclick="navigateTo('danh-sach', 'Tất cả tài liệu', 'menu-all-docs'); setActiveBottomNav(this)" aria-label="Tài liệu">
       <i class="fas fa-folder-open"></i>
       <span>Tài liệu</span>
     </button>
-    <button onclick="focusMobileSearch(); setActiveBottomNav(this)" aria-label="Tìm kiếm">
+    <button id="bottom-nav-search" onclick="focusMobileSearch(); setActiveBottomNav(this)" aria-label="Tìm kiếm">
       <i class="fas fa-search"></i>
       <span>Tìm kiếm</span>
     </button>
-    <button onclick="filterByExpiryCard('expiring'); setActiveBottomNav(this)" aria-label="Cảnh báo">
+    <button id="bottom-nav-alert" onclick="filterByExpiryCard('expiring'); setActiveBottomNav(this)" aria-label="Cảnh báo">
       <i class="fas fa-bell"></i>
       <span>Cảnh báo</span>
     </button>
