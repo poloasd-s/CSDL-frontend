@@ -73,14 +73,20 @@
           allDocuments = (rawDocs || []).map(function(item) {
             var rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
                 ? item.categories.slice()
-                : (item.category ? [item.category] : []);
+                : (item["Danh mục"] || item.danhMuc || item.category ? [item["Danh mục"] || item.danhMuc || item.category] : []);
             
-            var mainCat = item.category || "Khác";
+            var mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
+
+            var docNumber = item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "";
+            var fileName = item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "";
+            var abstract = item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "";
+            if (!fileName && abstract) fileName = abstract;
+            if (!abstract && fileName) abstract = fileName;
 
             var contextStr = (
-              (item.fileName || "") + " " +
-              (item.docNumber || "") + " " +
-              (item.abstract || "") + " " +
+              fileName + " " +
+              docNumber + " " +
+              abstract + " " +
               mainCat + " " +
               rawCatList.join(" ")
             ).toLowerCase();
@@ -102,9 +108,21 @@
               rawCatList = [mainCat];
             }
 
-            item.category = mainCat;
-            item.categories = rawCatList;
-            return item;
+            return {
+              ...item,
+              docNumber: docNumber,
+              fileName: fileName,
+              abstract: abstract,
+              category: mainCat,
+              categories: rawCatList,
+              effectiveDate: item["Ngày hiệu lực"] || item.ngayHieuLuc || item.effectiveDate || "",
+              expiryDate: item["Ngày hết hiệu lực"] || item.ngayHetHieuLuc || item.expiryDate || "",
+              status: item["Trạng thái"] || item.trangThai || item.status || "Không xác định",
+              driveLink: item["Link Drive"] || item.linkDrive || item.driveLink || "",
+              fileId: item["File ID"] || item.fileID || item.fileId || "",
+              note: item["Ghi chú"] || item.ghiChu || item.note || "",
+              updatedBy: item["Người cập nhật"] || item.nguoiCapNhat || item.updatedBy || ""
+            };
           });
 
           renderStats(allDocuments);
@@ -317,10 +335,10 @@
       var tr = document.createElement('tr');
       tr.className = "hover:bg-blue-50/50 transition-colors cursor-pointer group";
       tr.innerHTML =
-        '<td class="p-3.5 text-gray-500 font-medium" data-label="STT">' + (index + 1) + '</td>' +
+        '<td class="p-3.5 text-gray-500 font-medium text-center" data-label="STT">' + (index + 1) + '</td>' +
         '<td class="p-3.5 font-semibold text-blue-700 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
         '<td class="p-3.5" data-label="Tên tài liệu"><div class="line-clamp-2 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-        '<td class="p-3.5" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+        '<td class="p-3.5" data-label="Nội dung trích yếu"><div class="line-clamp-2 text-gray-700" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
         '<td class="p-3.5" data-label="Danh mục">' + categoryBadgesHtml + '</td>' +
         '<td class="p-3.5 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
         '<td class="p-3.5 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
@@ -380,7 +398,7 @@
         tr.innerHTML =
           '<td class="p-3 font-semibold text-blue-900 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
           '<td class="p-3" data-label="Tên tài liệu"><div class="line-clamp-1 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-          '<td class="p-3" data-label="Trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+          '<td class="p-3" data-label="Nội dung trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
           '<td class="p-3 font-medium text-gray-600 whitespace-nowrap" data-label="Ngày hết hạn">' + dateDisplay + '</td>' +
           '<td class="p-3 whitespace-nowrap" data-label="Cảnh báo hạn">' +
             '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ' + evalInfo.badgeClass + '">' +
@@ -812,10 +830,10 @@
       tr.className = "hover:bg-blue-50/50 transition-colors";
      
       var htmlString =
-        '<td class="p-4 text-gray-500 font-medium" data-label="STT">' + (startItem + index + 1) + '</td>' +
+        '<td class="p-4 text-gray-500 font-medium text-center" data-label="STT">' + (startItem + index + 1) + '</td>' +
         '<td class="p-4 font-semibold text-blue-700 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
         '<td class="p-4" data-label="Tên tài liệu"><div class="line-clamp-2 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-        '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+        '<td class="p-4" data-label="Nội dung trích yếu"><div class="line-clamp-2 text-gray-700" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
         '<td class="p-4 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
         '<td class="p-4 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
         '<td class="p-4" data-label="Danh mục / Tags">' + categoryBadgesHtml + '</td>' +

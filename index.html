@@ -432,17 +432,17 @@
             </button>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
+            <table class="w-full min-w-[1100px] text-left text-sm">
               <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
                 <tr>
-                  <th class="p-3.5 font-semibold w-16">STT</th>
-                  <th class="p-3.5 font-semibold">Số ký hiệu</th>
-                  <th class="p-3.5 font-semibold">Tên tài liệu</th>
-                  <th class="p-3.5 font-semibold">Trích yếu</th>
-                  <th class="p-3.5 font-semibold">Loại tài liệu</th>
-                  <th class="p-3.5 font-semibold">Ngày ban hành</th>
-                  <th class="p-3.5 font-semibold">Trạng thái</th>
-                  <th class="p-3.5 font-semibold text-center">Thao tác</th>
+                  <th class="p-3.5 font-semibold w-12 text-center">STT</th>
+                  <th class="p-3.5 font-semibold w-32 whitespace-nowrap">Số ký hiệu</th>
+                  <th class="p-3.5 font-semibold w-64">Tên tài liệu</th>
+                  <th class="p-3.5 font-semibold min-w-[280px]">Nội dung trích yếu</th>
+                  <th class="p-3.5 font-semibold w-36">Loại tài liệu</th>
+                  <th class="p-3.5 font-semibold w-32 whitespace-nowrap">Ngày ban hành</th>
+                  <th class="p-3.5 font-semibold w-36 whitespace-nowrap">Trạng thái</th>
+                  <th class="p-3.5 font-semibold w-24 text-center whitespace-nowrap">Thao tác</th>
                 </tr>
               </thead>
               <tbody id="table-recent-docs" class="divide-y divide-gray-100">
@@ -470,15 +470,15 @@
               </div>
             </div>
             <div class="overflow-x-auto flex-1">
-              <table class="w-full text-left text-sm">
+              <table class="w-full min-w-[700px] text-left text-sm">
                 <thead class="bg-amber-50/40 text-amber-900 text-xs uppercase tracking-wider">
                   <tr>
-                    <th class="p-3 font-semibold">Số ký hiệu</th>
-                    <th class="p-3 font-semibold">Tên tài liệu</th>
-                    <th class="p-3 font-semibold">Trích yếu</th>
-                    <th class="p-3 font-semibold">Ngày hết hạn</th>
-                    <th class="p-3 font-semibold">Cảnh báo hạn</th>
-                    <th class="p-3 font-semibold text-center">Thao tác</th>
+                    <th class="p-3 font-semibold w-32 whitespace-nowrap">Số ký hiệu</th>
+                    <th class="p-3 font-semibold w-52">Tên tài liệu</th>
+                    <th class="p-3 font-semibold min-w-[180px]">Nội dung trích yếu</th>
+                    <th class="p-3 font-semibold w-32 whitespace-nowrap">Ngày hết hạn</th>
+                    <th class="p-3 font-semibold w-36 whitespace-nowrap">Cảnh báo hạn</th>
+                    <th class="p-3 font-semibold w-20 text-center whitespace-nowrap">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody id="table-expiring-docs" class="divide-y divide-amber-50"></tbody>
@@ -501,15 +501,15 @@
               </div>
             </div>
             <div class="overflow-x-auto flex-1">
-              <table class="w-full text-left text-sm">
+              <table class="w-full min-w-[700px] text-left text-sm">
                 <thead class="bg-rose-50/40 text-rose-900 text-xs uppercase tracking-wider">
                   <tr>
-                    <th class="p-3 font-semibold">Số ký hiệu</th>
-                    <th class="p-3 font-semibold">Tên tài liệu</th>
-                    <th class="p-3 font-semibold">Trích yếu</th>
-                    <th class="p-3 font-semibold">Ngày hết hạn</th>
-                    <th class="p-3 font-semibold">Cảnh báo hạn</th>
-                    <th class="p-3 font-semibold text-center">Thao tác</th>
+                    <th class="p-3 font-semibold w-32 whitespace-nowrap">Số ký hiệu</th>
+                    <th class="p-3 font-semibold w-52">Tên tài liệu</th>
+                    <th class="p-3 font-semibold min-w-[180px]">Nội dung trích yếu</th>
+                    <th class="p-3 font-semibold w-32 whitespace-nowrap">Ngày hết hạn</th>
+                    <th class="p-3 font-semibold w-36 whitespace-nowrap">Cảnh báo hạn</th>
+                    <th class="p-3 font-semibold w-20 text-center whitespace-nowrap">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody id="table-expired-docs" class="divide-y divide-rose-50"></tbody>
@@ -599,29 +599,29 @@
           </div>
           <!-- KẾT THÚC BỘ LỌC -->
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
+            <table class="w-full min-w-[1150px] text-left text-sm">
               <thead class="bg-gray-50 text-gray-600">
                 <tr>
-                  <th class="p-4 font-medium w-16">STT</th>
-                  <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('docNumber')">
+                  <th class="p-4 font-semibold w-12 text-center">STT</th>
+                  <th class="p-4 font-semibold w-36 whitespace-nowrap cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('docNumber')">
                     Số ký hiệu <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
-                  <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('fileName')">
+                  <th class="p-4 font-semibold w-64 cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('fileName')">
                     Tên tài liệu <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
-                  <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('abstract')">
-                    Trích yếu <i class="fas fa-sort ml-1 text-gray-400"></i>
+                  <th class="p-4 font-semibold min-w-[280px] cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('abstract')">
+                    Nội dung trích yếu <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
-                  <th class="p-4 font-medium w-36 cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('effectiveDate')">
+                  <th class="p-4 font-semibold w-32 whitespace-nowrap cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('effectiveDate')">
                     Ngày ban hành <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
-                  <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('status')">
+                  <th class="p-4 font-semibold w-36 whitespace-nowrap cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('status')">
                     Trạng thái <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
-                  <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('category')">
+                  <th class="p-4 font-semibold w-40 cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('category')">
                     Danh mục / Tags <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
-                  <th class="p-4 font-medium text-center w-24">Thao tác</th>
+                  <th class="p-4 font-semibold w-24 text-center whitespace-nowrap">Thao tác</th>
                 </tr>
               </thead>
               <tbody id="table-danh-sach-docs" class="divide-y divide-gray-100"></tbody>

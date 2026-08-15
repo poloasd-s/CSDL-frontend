@@ -202,10 +202,17 @@ function loadDashboardData() {
           rawCatList = [mainCat];
         }
 
+        let docNumber = item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "";
+        let fileName = item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "";
+        let abstract = item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "";
+        if (!fileName && abstract) fileName = abstract;
+        if (!abstract && fileName) abstract = fileName;
+
         return {
           ...item,
-          docNumber: item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "",
-          abstract: item["Nội dung trích yếu"] || item.noiDungTrichYeu || item.abstract || "",
+          docNumber: docNumber,
+          fileName: fileName,
+          abstract: abstract,
           category: mainCat,
           categories: rawCatList,
           effectiveDate: item["Ngày hiệu lực"] || item.ngayHieuLuc || item.effectiveDate || "",
@@ -214,7 +221,6 @@ function loadDashboardData() {
           driveLink: item["Link Drive"] || item.linkDrive || item.driveLink || "",
           fileId: item["File ID"] || item.fileID || item.fileId || "",
           note: item["Ghi chú"] || item.ghiChu || item.note || "",
-          fileName: item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "",
           updatedBy: item["Người cập nhật"] || item.nguoiCapNhat || item.updatedBy || ""
         };
       });
@@ -440,10 +446,10 @@ function renderRecentTable(docs, isSearch) {
     var tr = document.createElement('tr');
     tr.className = "hover:bg-blue-50/50 transition-colors cursor-pointer group";
     tr.innerHTML =
-      '<td class="p-3.5 text-gray-500 font-medium" data-label="STT">' + (index + 1) + '</td>' +
+      '<td class="p-3.5 text-gray-500 font-medium text-center" data-label="STT">' + (index + 1) + '</td>' +
       '<td class="p-3.5 font-semibold text-blue-700 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
       '<td class="p-3.5" data-label="Tên tài liệu"><div class="line-clamp-2 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-      '<td class="p-3.5" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+      '<td class="p-3.5" data-label="Nội dung trích yếu"><div class="line-clamp-2 text-gray-700" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
       '<td class="p-3.5" data-label="Danh mục">' + categoryBadgesHtml + '</td>' +
       '<td class="p-3.5 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
       '<td class="p-3.5 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
@@ -505,7 +511,7 @@ function renderWarningTables(docs) {
       tr.innerHTML =
         '<td class="p-3 font-semibold text-blue-900 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
         '<td class="p-3" data-label="Tên tài liệu"><div class="line-clamp-1 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-        '<td class="p-3" data-label="Trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+        '<td class="p-3" data-label="Nội dung trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
         '<td class="p-3 font-medium text-gray-600 whitespace-nowrap" data-label="Ngày hết hạn">' + dateDisplay + '</td>' +
         '<td class="p-3 whitespace-nowrap" data-label="Cảnh báo hạn">' +
         '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ' + evalInfo.badgeClass + '">' +
@@ -982,10 +988,10 @@ function displayCurrentPage() {
     tr.className = "hover:bg-blue-50/50 transition-colors";
 
     var htmlString =
-      '<td class="p-4 text-gray-500 font-medium" data-label="STT">' + (startItem + index + 1) + '</td>' +
+      '<td class="p-4 text-gray-500 font-medium text-center" data-label="STT">' + (startItem + index + 1) + '</td>' +
       '<td class="p-4 font-semibold text-blue-700 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
       '<td class="p-4" data-label="Tên tài liệu"><div class="line-clamp-2 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-      '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
+      '<td class="p-4" data-label="Nội dung trích yếu"><div class="line-clamp-2 text-gray-700" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
       '<td class="p-4 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
       '<td class="p-4 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
       '<td class="p-4" data-label="Danh mục / Tags">' + categoryBadgesHtml + '</td>' +
