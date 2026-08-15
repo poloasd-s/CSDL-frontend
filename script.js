@@ -471,15 +471,14 @@ function formatDateDMY(dateVal) {
 // --- HÀM TẠO LINK TẢI TRỰC TIẾP TỪ GOOGLE DRIVE ---
 function getDirectDownloadUrl(doc) {
   if (!doc) return '#';
+  if (doc.driveLink && doc.driveLink !== '#' && doc.driveLink.trim() !== '') {
+    return doc.driveLink;
+  }
   var fileId = doc.fileId || doc.fileID;
-  if (!fileId && doc.driveLink) {
-    var match = doc.driveLink.match(/\/d\/([a-zA-Z0-9_-]+)/) || doc.driveLink.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match) fileId = match[1];
-  }
   if (fileId) {
-    return 'https://drive.usercontent.google.com/download?id=' + fileId + '&export=download&authuser=0&confirm=t';
+    return 'https://drive.google.com/file/d/' + fileId + '/view?usp=drivesdk';
   }
-  return doc.driveLink || '#';
+  return '#';
 }
 
 // --- HÀM RENDER BẢNG TÀI LIỆU MỚI CẬP NHẬT (30 NGÀY GẦN NHẤT) ---
