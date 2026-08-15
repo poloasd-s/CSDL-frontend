@@ -468,6 +468,20 @@ function formatDateDMY(dateVal) {
   return day + '/' + month + '/' + year;
 }
 
+// --- HÀM TẠO LINK TẢI TRỰC TIẾP TỪ GOOGLE DRIVE ---
+function getDirectDownloadUrl(doc) {
+  if (!doc) return '#';
+  var fileId = doc.fileId || doc.fileID;
+  if (!fileId && doc.driveLink) {
+    var match = doc.driveLink.match(/\/d\/([a-zA-Z0-9_-]+)/) || doc.driveLink.match(/id=([a-zA-Z0-9_-]+)/);
+    if (match) fileId = match[1];
+  }
+  if (fileId) {
+    return 'https://drive.google.com/uc?export=download&id=' + fileId + '&confirm=t';
+  }
+  return doc.driveLink || '#';
+}
+
 // --- HÀM RENDER BẢNG TÀI LIỆU MỚI CẬP NHẬT (30 NGÀY GẦN NHẤT) ---
 function renderRecentTable(docs, isSearch) {
   var tbody = document.getElementById('table-recent-docs');
@@ -518,7 +532,7 @@ function renderRecentTable(docs, isSearch) {
       evalInfo.statusText +
       '</span>';
 
-    var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
+    var downloadLink = getDirectDownloadUrl(doc);
 
     var tr = document.createElement('tr');
     tr.className = "hover:bg-blue-50/50 transition-colors cursor-pointer group";
@@ -532,8 +546,8 @@ function renderRecentTable(docs, isSearch) {
       '<td class="p-3.5 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
       '<td class="p-3.5 text-center whitespace-nowrap" data-label="Thao tác">' +
       '<div class="flex items-center justify-center gap-3 action-btns">' +
-      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1 touch-target" title="Xem"><i class="fas fa-eye"></i></a>' +
-      '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1 touch-target" title="Tải"><i class="fas fa-download"></i></a>' +
+      '<a href="' + (doc.driveLink || '#') + '" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-600 p-1 touch-target" title="Xem"><i class="fas fa-eye"></i></a>' +
+      '<a href="' + downloadLink + '" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-green-600 p-1 touch-target" title="Tải về"><i class="fas fa-download"></i></a>' +
       '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1 touch-target" title="Sửa"><i class="fas fa-edit"></i></button>' +
       '</div>' +
       '</td>';
@@ -624,7 +638,7 @@ function renderWarningTables(docs) {
       var dateDisplay = formatDateDMY(doc.expiryDate);
 
       var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
-      var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
+      var downloadLink = getDirectDownloadUrl(doc);
       var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
       var tr = document.createElement('tr');
       tr.className = "hover:bg-" + themeClass + "-50/50 transition-colors";
@@ -640,8 +654,8 @@ function renderWarningTables(docs) {
         '</span>' +
         '</td>' +
         '<td class="p-3 text-center whitespace-nowrap" data-label="Thao tác">' +
-        '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 mr-2 p-1" title="Xem văn bản"><i class="fas fa-eye"></i></a>' +
-        '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải về"><i class="fas fa-download"></i></a>' +
+        '<a href="' + (doc.driveLink || '#') + '" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-600 mr-2 p-1" title="Xem văn bản"><i class="fas fa-eye"></i></a>' +
+        '<a href="' + downloadLink + '" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-green-600 p-1" title="Tải về"><i class="fas fa-download"></i></a>' +
         '</td>';
       tbody.appendChild(tr);
     });
@@ -1139,7 +1153,7 @@ function displayCurrentPage() {
     }
 
     var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
-    var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
+    var downloadLink = getDirectDownloadUrl(doc);
     var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
     var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
 
@@ -1156,8 +1170,8 @@ function displayCurrentPage() {
       '<td class="p-4" data-label="Danh mục / Tags">' + categoryBadgesHtml + '</td>' +
       '<td class="p-4 text-center whitespace-nowrap" data-label="Thao tác">' +
       '<div class="flex items-center justify-center gap-3 action-btns">' +
-      '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 p-1 touch-target" title="Xem"><i class="fas fa-eye"></i></a>' +
-      '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1 touch-target" title="Tải"><i class="fas fa-download"></i></a>' +
+      '<a href="' + (doc.driveLink || '#') + '" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-blue-600 p-1 touch-target" title="Xem"><i class="fas fa-eye"></i></a>' +
+      '<a href="' + downloadLink + '" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-green-600 p-1 touch-target" title="Tải về"><i class="fas fa-download"></i></a>' +
       '<button onclick="editDoc(\'' + docId + '\')" class="admin-only ' + adminClass + ' text-gray-400 hover:text-yellow-600 p-1 touch-target" title="Sửa"><i class="fas fa-edit"></i></button>' +
       '</div>' +
       '</td>';
