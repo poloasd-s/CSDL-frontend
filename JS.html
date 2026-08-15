@@ -796,6 +796,7 @@
     tbody.innerHTML = '';
    
     var totalItems = currentCategoryList.length;
+    var totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
     var startItem = (currentPage - 1) * itemsPerPage;
     var endItem = Math.min(startItem + itemsPerPage, totalItems);
    
@@ -809,15 +810,12 @@
     if (pageTotalEl) pageTotalEl.innerText = totalItems;
    
     var pageNumberEl = document.getElementById('page-number');
-    if (pageNumberEl) pageNumberEl.innerText = currentPage;
-
-
-
+    if (pageNumberEl) pageNumberEl.innerText = currentPage + '/' + totalPages;
 
     var btnPrev = document.getElementById('btn-prev-page');
     var btnNext = document.getElementById('btn-next-page');
     if (btnPrev) btnPrev.style.opacity = (currentPage === 1) ? '0.5' : '1';
-    if (btnNext) btnNext.style.opacity = (endItem >= totalItems) ? '0.5' : '1';
+    if (btnNext) btnNext.style.opacity = (currentPage >= totalPages || endItem >= totalItems) ? '0.5' : '1';
 
 
 

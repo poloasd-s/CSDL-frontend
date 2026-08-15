@@ -1049,6 +1049,7 @@ function displayCurrentPage() {
   tbody.innerHTML = '';
 
   var totalItems = currentCategoryList.length;
+  var totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   var startItem = (currentPage - 1) * itemsPerPage;
   var endItem = Math.min(startItem + itemsPerPage, totalItems);
 
@@ -1062,12 +1063,12 @@ function displayCurrentPage() {
   if (pageTotalEl) pageTotalEl.innerText = totalItems;
 
   var pageNumberEl = document.getElementById('page-number');
-  if (pageNumberEl) pageNumberEl.innerText = currentPage;
+  if (pageNumberEl) pageNumberEl.innerText = currentPage + '/' + totalPages;
 
   var btnPrev = document.getElementById('btn-prev-page');
   var btnNext = document.getElementById('btn-next-page');
   if (btnPrev) btnPrev.style.opacity = (currentPage === 1) ? '0.5' : '1';
-  if (btnNext) btnNext.style.opacity = (endItem >= totalItems) ? '0.5' : '1';
+  if (btnNext) btnNext.style.opacity = (currentPage >= totalPages || endItem >= totalItems) ? '0.5' : '1';
 
   if (totalItems === 0) {
     tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-gray-500 italic">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>';
@@ -1133,7 +1134,7 @@ function displayCurrentPage() {
 
   // Update mobile page number
   var mobilePageNum = document.getElementById('page-number-mobile');
-  if (mobilePageNum) mobilePageNum.innerText = currentPage;
+  if (mobilePageNum) mobilePageNum.innerText = currentPage + '/' + totalPages;
 }
 
 
