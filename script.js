@@ -194,6 +194,12 @@ function loadDashboardData() {
           }
         }
 
+        // Chuẩn hóa nhóm VBHĐ (Văn bản hiệp đồng)
+        if (mainCat.toUpperCase().startsWith("VBHĐ") || mainCat.toUpperCase().startsWith("VBHD")) {
+          mainCat = "VBHĐ";
+          rawCatList = ["VBHĐ"];
+        }
+
         if (rawCatList.length === 0) {
           rawCatList = [mainCat];
         }
@@ -1701,14 +1707,12 @@ function renderCharts(docs) {
   // --- BỘ TỪ ĐIỂN TỰ ĐỘNG GOM NHÓM (DYNAMIC MAPPING) ---
   // Hỗ trợ tự động nhận diện danh mục mới và gom nhóm theo CATEGORY_HIERARCHY
   var fallbackMapping = {
-    "TL QĐ 272/QĐ-CHK": ["272", "qđ-chk", "qđ 272", "quy định 272"],
+    "TL QĐ 272/QĐ-CHK": ["272", "qđ-chk", "qđ 272", "quy định 272", "vbhđ", "vbhd", "bđdv", "ats", "luật", "nghị định", "thông tư", "cục hk", "tlhdkt", "icao", "annex", "doc", "việt nam"],
     "TL ISO 9001:2015": ["iso", "chính sách chất lượng", "mtcl", "mục tiêu chất lượng", "sổ tay", "quy trình", "biểu mẫu", "hướng dẫn"],
     "ATVSLĐ": ["atvslđ", "an toàn", "vệ sinh lao động"],
     "PCCC-CNCH": ["pccc", "cnch", "phòng cháy", "chữa cháy", "cứu nạn"],
-    "Hệ thống VBDHĐ TCT": ["vbdhđ tct", "tct", "tổng công ty"],
-    "Hệ thống VBDHĐ ĐKSKL": ["vbdhđ đkskl", "đkskl", "đài kiểm soát"],
     "Năng định, Năng lực": ["năng định", "năng lực"],
-    "Tổ Không lưu": ["không lưu", "bqp-ctc", "bqp ctc"],
+    "Tổ Không lưu": ["không lưu", "vbđhb", "vbdhđ", "tổ kl", "họp tổ", "bqp-ctc", "bqp ctc"],
     "Tổ Kỹ thuật": ["kỹ thuật"],
     "Tổ Phục vụ bay": ["phục vụ bay", "pvb"],
     "Tổ An ninh": ["an ninh"]
