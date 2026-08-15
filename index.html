@@ -26,8 +26,13 @@
   <!-- SheetJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js (Bản UMD chuẩn hỗ trợ toàn diện PC & Mobile) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>');
+    }
+  </script>
 
   <style>
     /* ========== TEMPLATE A — DESIGN TOKENS (VATM Brand) ========== */
@@ -1211,7 +1216,7 @@
   </button>
 
   <!-- ================= SCRIPT ================= -->
-  <script src="script.js?v=3.1.0"></script>
+  <script src="script.js?v=3.2.0"></script>
   <script>
     // === INIT ON DOM READY ===
     document.addEventListener("DOMContentLoaded", function() {
