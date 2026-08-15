@@ -705,12 +705,13 @@ function executeSearch() {
   clearFilters(); // Tự động hiển thị và phân trang kết quả
 }
 
-// --- HÀM LỌC NHANH KHI CLICK VÀO CÁC THẺ KPI TRÊN DASHBOARD ---
+// --- HÀM LỌC NHANH KHI CLICK VÀO CÁC THẺ KPI TRÊN DASHBOARD HOẶC THÔNG BÁO ---
 function filterByExpiryCard(statusKey) {
   var title = "Tất cả tài liệu";
   if (statusKey === 'active') title = "Tài liệu còn hiệu lực";
   else if (statusKey === 'expiring') title = "Tài liệu sắp hết hiệu lực";
   else if (statusKey === 'expired') title = "Tài liệu đã hết hiệu lực";
+  else if (statusKey === 'warning' || statusKey === 'all_warning') title = "Tất cả tài liệu cảnh báo hạn (Sắp & Đã hết hạn)";
 
   navigateTo('danh-sach', title, 'menu-all-docs');
 
@@ -737,6 +738,17 @@ function filterByExpiryCard(statusKey) {
       return evalInfo.statusKey === 'expired';
     });
     if (statusSelect) statusSelect.value = 'hết hiệu lực';
+  } else if (statusKey === 'warning' || statusKey === 'all_warning') {
+    baseCategoryList = allDocuments.filter(function (doc) {
+      var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
+      return evalInfo.statusKey === 'expiring' || evalInfo.statusKey === 'expired';
+    });
+    baseCategoryList.sort(function (a, b) {
+      var evalA = evaluateDocumentExpiry(a.expiryDate, a.status);
+      var evalB = evaluateDocumentExpiry(b.expiryDate, b.status);
+      return evalA.daysDiff - evalB.daysDiff;
+    });
+    if (statusSelect) statusSelect.value = 'all';
   }
 
   clearFilters(true);
@@ -744,10 +756,12 @@ function filterByExpiryCard(statusKey) {
 
 // --- HÀM XEM TẤT CẢ TÀI LIỆU SẮP HẾT / ĐÃ HẾT HIỆU LỰC ---
 function viewAllStatus(statusType) {
-  if (statusType === 'sắp hết hiệu lực') {
+  if (statusType === 'sắp hết hiệu lực' || statusType === 'expiring') {
     filterByExpiryCard('expiring');
-  } else {
+  } else if (statusType === 'đã hết hiệu lực' || statusType === 'expired') {
     filterByExpiryCard('expired');
+  } else {
+    filterByExpiryCard('warning');
   }
 }
 
@@ -1581,14 +1595,18 @@ function renderNotifications(docs) {
         title: 'Tài liệu sắp hết hạn (' + evalInfo.countdownText + ')',
         desc: 'Số hiệu ' + docNumber + ' - ' + (doc.abstract || doc.fileName || ''),
         color: 'orange',
-        icon: 'fa-triangle-exclamation'
+        icon: 'fa-triangle-exclamation',
+        statusKey: 'expiring',
+        driveLink: doc.driveLink
       });
     } else if (evalInfo.statusKey === 'expired') {
       alerts.push({
         title: 'Tài liệu đã hết hạn (' + evalInfo.countdownText + ')',
         desc: 'Số hiệu ' + docNumber + ' - ' + (doc.abstract || doc.fileName || ''),
         color: 'red',
-        icon: 'fa-circle-xmark'
+        icon: 'fa-circle-xmark',
+        statusKey: 'expired',
+        driveLink: doc.driveLink
       });
     }
   });
@@ -1618,12 +1636,12 @@ function renderNotifications(docs) {
 
   alerts.slice(0, 15).forEach(function (item) {
     var html =
-      '<div class="px-4 py-3 hover:bg-gray-50 transition-colors flex gap-3 items-start border-b border-gray-100 last:border-0">' +
+      '<div onclick="filterByExpiryCard(\'' + item.statusKey + '\'); toggleNotifications();" class="px-4 py-3 hover:bg-gray-50 transition-colors flex gap-3 items-start border-b border-gray-100 last:border-0 cursor-pointer group">' +
       '<div class="mt-0.5 text-' + item.color + '-500 bg-' + item.color + '-100 p-2 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 text-xs">' +
       '<i class="fas ' + item.icon + '"></i>' +
       '</div>' +
       '<div class="flex-1 min-w-0">' +
-      '<p class="text-xs font-bold text-gray-800 line-clamp-1">' + item.title + '</p>' +
+      '<p class="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-blue-600 transition-colors">' + item.title + '</p>' +
       '<p class="text-[11px] text-gray-600 line-clamp-2 mt-0.5">' + item.desc + '</p>' +
       '</div>' +
       '</div>';
