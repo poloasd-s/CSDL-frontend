@@ -489,38 +489,6 @@
           '</td>';
         tbody.appendChild(tr);
       });
-    }tem) {
-        var doc = item.doc;
-        var evalInfo = item.eval;
-        var dateDisplay = "N/A";
-        if (doc.expiryDate) {
-          var dateObj = new Date(doc.expiryDate);
-          if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
-          else dateDisplay = String(doc.expiryDate);
-        }
-
-        var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
-        var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
-        var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
-        var tr = document.createElement('tr');
-        tr.className = "hover:bg-none transition-colors";
-        tr.innerHTML =
-          '<td class="p-3 font-semibold text-blue-900 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
-          '<td class="p-3" data-label="Tên tài liệu"><div class="line-clamp-1 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
-          '<td class="p-3" data-label="Nội dung trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
-          '<td class="p-3 font-medium text-gray-600 whitespace-nowrap" data-label="Ngày hết hạn">' + dateDisplay + '</td>' +
-          '<td class="p-3 whitespace-nowrap" data-label="Cảnh báo hạn">' +
-            '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ' + evalInfo.badgeClass + '">' +
-              '<span class="w-1.5 h-1.5 rounded-full ' + evalInfo.dotColor + '"></span>' +
-              evalInfo.countdownText +
-            '</span>' +
-          '</td>' +
-          '<td class="p-3 text-center whitespace-nowrap" data-label="Thao tác">' +
-            '<a href="' + (doc.driveLink || '#') + '" target="_blank" class="text-gray-400 hover:text-blue-600 mr-2 p-1" title="Xem văn bản"><i class="fas fa-eye"></i></a>' +
-            '<a href="' + downloadLink + '" class="text-gray-400 hover:text-green-600 p-1" title="Tải về"><i class="fas fa-download"></i></a>' +
-          '</td>';
-        tbody.appendChild(tr);
-      });
     }
 
     buildTableHTML(tbodyExpiring, expiringDocs, 'amber');
