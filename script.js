@@ -1667,7 +1667,7 @@ function renderCharts(docs) {
   });
 
   Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
-  Chart.defaults.font.size = 12;
+  Chart.defaults.font.size = 13;
 
   // --- BỘ TỪ ĐIỂN GOM NHÓM THÔNG MINH ---
   var categoryMapping = {
