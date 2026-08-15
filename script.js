@@ -1626,14 +1626,36 @@ var chartYearInstance = null;
 var chartStatusInstance = null;
 
 function renderCharts(docs) {
-  // Chart.js fail-soft: show fallback if library not loaded
+  // Tự động nạp Chart.js UMD nếu thư viện chưa sẵn sàng trên trình duyệt PC/Mobile
   if (typeof Chart === 'undefined') {
-    ['chartCategory', 'chartYear', 'chartStatus'].forEach(function(id) {
-      var canvas = document.getElementById(id);
-      var fallback = document.getElementById(id + '-fallback');
-      if (canvas) canvas.style.display = 'none';
-      if (fallback) fallback.classList.remove('hidden');
-    });
+    if (!window._chartJsLoading) {
+      window._chartJsLoading = true;
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+      s.onload = function () {
+        window._chartJsLoading = false;
+        renderCharts(docs);
+      };
+      s.onerror = function () {
+        var s2 = document.createElement('script');
+        s2.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+        s2.onload = function () {
+          window._chartJsLoading = false;
+          renderCharts(docs);
+        };
+        s2.onerror = function () {
+          window._chartJsLoading = false;
+          ['chartCategory', 'chartYear', 'chartStatus'].forEach(function(id) {
+            var canvas = document.getElementById(id);
+            var fallback = document.getElementById(id + '-fallback');
+            if (canvas) canvas.style.display = 'none';
+            if (fallback) fallback.classList.remove('hidden');
+          });
+        };
+        document.head.appendChild(s2);
+      };
+      document.head.appendChild(s);
+    }
     return;
   }
 
