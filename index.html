@@ -2,9 +2,15 @@
 <html lang="vi" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Thư viện CSDL CT — ĐKSKL Cần Thơ</title>
   <meta name="description" content="Hệ thống quản lý cơ sở dữ liệu tài liệu số — Đài Kiểm soát Không lưu Cần Thơ">
+
+  <!-- Mobile Web App & Theme Color (Giúp thanh địa chỉ đổi màu đồng bộ và hỗ trợ ẩn thanh địa chỉ) -->
+  <meta name="theme-color" content="#0A3B72">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,8 +118,20 @@
 
     /* Desktop (>= 1024px) */
     @media (min-width: 1024px) {
+      html, body {
+        height: 100vh;
+        overflow: hidden;
+      }
       #sidebar { transform: translateX(0); }
-      #my-content { margin-left: var(--sidebar-w); }
+      #my-content {
+        margin-left: var(--sidebar-w);
+        height: 100%;
+        overflow: hidden;
+      }
+      #app-content {
+        height: 100%;
+        overflow-y: auto;
+      }
       #sidebar-overlay { display: none !important; }
 
       /* When collapsed on desktop */
@@ -125,8 +143,15 @@
       }
     }
 
-    /* Mobile & Tablet (< 1024px) */
+    /* Mobile & Tablet (< 1024px) — Cho phép cuộn trang tự nhiên để trình duyệt ẩn thanh địa chỉ URL */
     @media (max-width: 1023px) {
+      html, body {
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
       #sidebar {
         transform: translateX(-100%);
       }
@@ -134,7 +159,20 @@
         transform: translateX(0) !important;
       }
       #my-content {
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow: visible !important;
         margin-left: 0 !important;
+      }
+      #app-content {
+        height: auto !important;
+        overflow: visible !important;
+        padding-bottom: calc(var(--bottom-nav-h) + 60px + env(safe-area-inset-bottom)) !important;
+      }
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
       }
     }
 
@@ -1268,6 +1306,37 @@
     function toggleMobileSidebar() {
       toggleSidebar();
     }
+
+    // === TỰ ĐỘNG ẨN THANH ĐỊA CHỈ TRÌNH DUYỆT TRÊN MOBILE (KHI VUỐT / CHẠM) ===
+    (function initMobileAddressBarCollapse() {
+      if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        function collapseMobileBar() {
+          if (window.innerWidth < 1024 && window.pageYOffset === 0) {
+            // Kích hoạt cuộn 1px để trigger trình duyệt di động ẩn thanh URL
+            window.scrollTo({ top: 1, behavior: 'smooth' });
+          }
+        }
+
+        // Tự động kích hoạt khi trang tải xong
+        window.addEventListener('load', function() {
+          setTimeout(collapseMobileBar, 400);
+        });
+
+        // Khi người dùng bắt đầu chạm / vuốt màn hình
+        var touchHandled = false;
+        window.addEventListener('touchstart', function() {
+          if (!touchHandled) {
+            touchHandled = true;
+            collapseMobileBar();
+          }
+        }, { passive: true });
+
+        // Khi xoay màn hình
+        window.addEventListener('orientationchange', function() {
+          setTimeout(collapseMobileBar, 300);
+        });
+      }
+    })();
   </script>
 </body>
 </html>
