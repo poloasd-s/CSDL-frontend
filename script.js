@@ -15,11 +15,11 @@ var currentSortAsc = true;
 // BẢN ĐỒ PHÂN CẤP DANH MỤC
 var CATEGORY_HIERARCHY = {
   "TL QĐ 272/QĐ-CHK": [
-    "Văn bản, TL Việt Nam", "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHD", "Danh mục TLHDKT",
+    "Văn bản, TL Việt Nam", "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHĐ", "Danh mục TLHDKT",
     "ICAO", "ANNEX", "DOC"
   ],
   "Văn bản, TL Việt Nam": [
-    "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHD", "Danh mục TLHDKT"
+    "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHĐ", "Danh mục TLHDKT"
   ],
   "ICAO": [
     "ANNEX", "DOC"
