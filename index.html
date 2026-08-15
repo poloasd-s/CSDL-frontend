@@ -437,6 +437,7 @@
                 <tr>
                   <th class="p-3.5 font-semibold w-16">STT</th>
                   <th class="p-3.5 font-semibold">Số ký hiệu</th>
+                  <th class="p-3.5 font-semibold">Tên tài liệu</th>
                   <th class="p-3.5 font-semibold">Trích yếu</th>
                   <th class="p-3.5 font-semibold">Loại tài liệu</th>
                   <th class="p-3.5 font-semibold">Ngày ban hành</th>
@@ -445,7 +446,7 @@
                 </tr>
               </thead>
               <tbody id="table-recent-docs" class="divide-y divide-gray-100">
-                <tr><td colspan="7" class="p-8 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu...</td></tr>
+                <tr><td colspan="8" class="p-8 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu...</td></tr>
               </tbody>
             </table>
           </div>
@@ -473,6 +474,7 @@
                 <thead class="bg-amber-50/40 text-amber-900 text-xs uppercase tracking-wider">
                   <tr>
                     <th class="p-3 font-semibold">Số ký hiệu</th>
+                    <th class="p-3 font-semibold">Tên tài liệu</th>
                     <th class="p-3 font-semibold">Trích yếu</th>
                     <th class="p-3 font-semibold">Ngày hết hạn</th>
                     <th class="p-3 font-semibold">Cảnh báo hạn</th>
@@ -503,6 +505,7 @@
                 <thead class="bg-rose-50/40 text-rose-900 text-xs uppercase tracking-wider">
                   <tr>
                     <th class="p-3 font-semibold">Số ký hiệu</th>
+                    <th class="p-3 font-semibold">Tên tài liệu</th>
                     <th class="p-3 font-semibold">Trích yếu</th>
                     <th class="p-3 font-semibold">Ngày hết hạn</th>
                     <th class="p-3 font-semibold">Cảnh báo hạn</th>
@@ -602,6 +605,9 @@
                   <th class="p-4 font-medium w-16">STT</th>
                   <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('docNumber')">
                     Số ký hiệu <i class="fas fa-sort ml-1 text-gray-400"></i>
+                  </th>
+                  <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('fileName')">
+                    Tên tài liệu <i class="fas fa-sort ml-1 text-gray-400"></i>
                   </th>
                   <th class="p-4 font-medium cursor-pointer hover:bg-gray-200 transition select-none" onclick="sortTable('abstract')">
                     Trích yếu <i class="fas fa-sort ml-1 text-gray-400"></i>
@@ -793,6 +799,10 @@
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">SỐ / KÝ HIỆU VĂN BẢN</label>
           <input type="text" id="edit-sokyhieu" required class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="4049/QĐ-QLB">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">TÊN TÀI LIỆU</label>
+          <input type="text" id="edit-filename" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-gray-800 transition" placeholder="Nhập tên tài liệu...">
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">DANH MỤC / TAG VĂN BẢN <span class="text-red-500">*</span></label>

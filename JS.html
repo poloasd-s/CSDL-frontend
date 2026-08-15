@@ -281,7 +281,7 @@
     }
 
     if (recentDocs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-500 italic">Không có tài liệu nào được cập nhật trong 30 ngày gần nhất.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-gray-500 italic">Không có tài liệu nào được cập nhật trong 30 ngày gần nhất.</td></tr>';
       return;
     }
 
@@ -295,6 +295,7 @@
         if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
       }
 
+      var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
       var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
       var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
       
@@ -317,7 +318,8 @@
       tr.className = "hover:bg-blue-50/50 transition-colors cursor-pointer group";
       tr.innerHTML =
         '<td class="p-3.5 text-gray-500 font-medium" data-label="STT">' + (index + 1) + '</td>' +
-        '<td class="p-3.5 font-semibold text-blue-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+        '<td class="p-3.5 font-semibold text-blue-700 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+        '<td class="p-3.5" data-label="Tên tài liệu"><div class="line-clamp-2 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
         '<td class="p-3.5" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
         '<td class="p-3.5" data-label="Danh mục">' + categoryBadgesHtml + '</td>' +
         '<td class="p-3.5 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
@@ -356,7 +358,7 @@
     function buildTableHTML(tbody, dataList, themeClass) {
       tbody.innerHTML = '';
       if (dataList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500 italic">Tuyệt vời! Hiện không có tài liệu nào thuộc nhóm này.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500 italic">Tuyệt vời! Hiện không có tài liệu nào thuộc nhóm này.</td></tr>';
         return;
       }
 
@@ -370,12 +372,14 @@
           else dateDisplay = String(doc.expiryDate);
         }
 
+        var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
         var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
         var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
         var tr = document.createElement('tr');
-        tr.className = "hover:bg-" + themeClass + "-50/50 transition-colors";
+        tr.className = "hover:bg-none transition-colors";
         tr.innerHTML =
-          '<td class="p-3 font-semibold text-blue-900" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+          '<td class="p-3 font-semibold text-blue-900 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+          '<td class="p-3" data-label="Tên tài liệu"><div class="line-clamp-1 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
           '<td class="p-3" data-label="Trích yếu"><div class="line-clamp-1 text-gray-700 font-normal" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
           '<td class="p-3 font-medium text-gray-600 whitespace-nowrap" data-label="Ngày hết hạn">' + dateDisplay + '</td>' +
           '<td class="p-3 whitespace-nowrap" data-label="Cảnh báo hạn">' +
@@ -769,7 +773,7 @@
 
 
     if (totalItems === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-500 italic">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-gray-500 italic">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td></tr>';
       return;
     }
 
@@ -799,6 +803,7 @@
         categoryBadgesHtml = '<span class="text-xs text-gray-400 italic">Chưa gắn tag</span>';
       }
 
+      var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
       var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
       var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
       var docId = doc.fileId || doc.id || doc.driveLink || doc.docNumber || doc.abstract || '';
@@ -808,7 +813,8 @@
      
       var htmlString =
         '<td class="p-4 text-gray-500 font-medium" data-label="STT">' + (startItem + index + 1) + '</td>' +
-        '<td class="p-4 font-semibold text-blue-700" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+        '<td class="p-4 font-semibold text-blue-700 whitespace-nowrap" data-label="Số ký hiệu">' + (doc.docNumber || '-') + '</td>' +
+        '<td class="p-4" data-label="Tên tài liệu"><div class="line-clamp-2 font-medium text-gray-900" title="' + (doc.fileName || '') + '">' + tenTL + '</div></td>' +
         '<td class="p-4" data-label="Trích yếu"><div class="line-clamp-2 text-gray-800" title="' + (doc.abstract || '') + '">' + trichYeu + '</div></td>' +
         '<td class="p-4 text-gray-500 whitespace-nowrap" data-label="Ngày ban hành">' + dateDisplay + '</td>' +
         '<td class="p-4 whitespace-nowrap" data-label="Trạng thái">' + statusBadgeHtml + '</td>' +
@@ -1506,9 +1512,10 @@ function realTimeSearch() {
   baseCategoryList = allDocuments.filter(function(doc) {
     var soKyHieu = doc.docNumber ? String(doc.docNumber).toLowerCase() : "";
     var trichYeu = doc.abstract ? String(doc.abstract).toLowerCase() : "";
+    var tenTaiLieu = doc.fileName ? String(doc.fileName).toLowerCase() : "";
     var loaiTL = doc.category ? String(doc.category).toLowerCase() : "";
     
-    return soKyHieu.includes(keyword) || trichYeu.includes(keyword) || loaiTL.includes(keyword);
+    return soKyHieu.includes(keyword) || trichYeu.includes(keyword) || tenTaiLieu.includes(keyword) || loaiTL.includes(keyword);
   });
   
   // 5. Cập nhật Tiêu đề bảng
