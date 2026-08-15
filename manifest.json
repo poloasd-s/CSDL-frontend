@@ -1,0 +1,25 @@
+{
+  "name": "Thư viện CSDL Số — ĐKSKL Cần Thơ",
+  "short_name": "CSDL Số CT",
+  "description": "Hệ thống quản lý cơ sở dữ liệu tài liệu số — Đài Kiểm soát Không lưu Cần Thơ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0A3B72",
+  "background_color": "#0A3B72",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/NG93CPjP/LOGO-VATM.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/NG93CPjP/LOGO-VATM.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

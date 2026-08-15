@@ -11,6 +11,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="CSDL Số CT">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/NG93CPjP/LOGO-VATM.jpg">
+  <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/NG93CPjP/LOGO-VATM.jpg">
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1405,6 +1411,19 @@
         });
       }
     })();
+
+    // === ĐĂNG KÝ SERVICE WORKER CHO PWA STANDALONE ===
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js')
+          .then(function(reg) {
+            console.log('PWA Service Worker đã sẵn sàng:', reg.scope);
+          })
+          .catch(function(err) {
+            console.warn('PWA Service Worker registration:', err);
+          });
+      });
+    }
   </script>
 </body>
 </html>
