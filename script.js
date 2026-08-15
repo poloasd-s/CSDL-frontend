@@ -436,24 +436,18 @@ function renderRecentTable(docs, isSearch) {
   var recentDocs = docs;
   if (!isSearch) {
     recentDocs = docs.filter(function (doc) {
-      var updateTime = parseDateToTime(doc.lastUpdated);
-      var effectiveTime = parseDateToTime(doc.effectiveDate);
-      return (updateTime >= thirtyDaysAgo) || (effectiveTime >= thirtyDaysAgo);
+      if (!doc.effectiveDate) return false;
+      var effTime = parseDateToTime(doc.effectiveDate);
+      return effTime >= thirtyDaysAgo;
     });
 
-    if (recentDocs.length === 0 && docs.length > 0) {
-      recentDocs = docs.slice().reverse();
-    } else {
-      recentDocs.sort(function (a, b) {
-        var timeA = Math.max(parseDateToTime(a.lastUpdated), parseDateToTime(a.effectiveDate));
-        var timeB = Math.max(parseDateToTime(b.lastUpdated), parseDateToTime(b.effectiveDate));
-        return timeB - timeA;
-      });
-    }
+    recentDocs.sort(function (a, b) {
+      return parseDateToTime(b.effectiveDate) - parseDateToTime(a.effectiveDate);
+    });
   }
 
   if (recentDocs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-gray-500 italic">Không có tài liệu nào được cập nhật trong 30 ngày gần nhất.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-gray-500 italic">Không có tài liệu nào có ngày hiệu lực trong 30 ngày gần nhất.</td></tr>';
     return;
   }
 
@@ -462,13 +456,12 @@ function renderRecentTable(docs, isSearch) {
 
   recentDocs.slice(0, limit).forEach(function (doc, index) {
     var dateDisplay = "N/A";
-    var timeShow = doc.effectiveDate || doc.lastUpdated;
-    if (timeShow) {
-      var dObj = new Date(timeShow);
+    if (doc.effectiveDate) {
+      var dObj = new Date(doc.effectiveDate);
       if (!isNaN(dObj.getTime())) {
         dateDisplay = dObj.toLocaleDateString('vi-VN');
       } else {
-        dateDisplay = String(timeShow).split('T')[0] || String(timeShow);
+        dateDisplay = String(doc.effectiveDate).split('T')[0] || String(doc.effectiveDate);
       }
     }
 
@@ -884,20 +877,14 @@ function renderCategoryTable(categoryName) {
     var thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
 
     baseCategoryList = allDocuments.filter(function (doc) {
-      var updateTime = parseDateToTime(doc.lastUpdated);
-      var effectiveTime = parseDateToTime(doc.effectiveDate);
-      return (updateTime >= thirtyDaysAgo) || (effectiveTime >= thirtyDaysAgo);
+      if (!doc.effectiveDate) return false;
+      var effTime = parseDateToTime(doc.effectiveDate);
+      return effTime >= thirtyDaysAgo;
     });
 
-    if (baseCategoryList.length === 0 && allDocuments.length > 0) {
-      baseCategoryList = allDocuments.slice().reverse();
-    } else {
-      baseCategoryList.sort(function (a, b) {
-        var timeA = Math.max(parseDateToTime(a.lastUpdated), parseDateToTime(a.effectiveDate));
-        var timeB = Math.max(parseDateToTime(b.lastUpdated), parseDateToTime(b.effectiveDate));
-        return timeB - timeA;
-      });
-    }
+    baseCategoryList.sort(function (a, b) {
+      return parseDateToTime(b.effectiveDate) - parseDateToTime(a.effectiveDate);
+    });
   }
   else {
     var keyword = String(categoryName).toLowerCase().trim();
