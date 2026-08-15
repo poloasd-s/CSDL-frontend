@@ -1361,9 +1361,28 @@
 
 
 
-    // --- BỘ TỪ ĐIỂN GOM NHÓM THÔNG MINH ---
-    // (Bạn có thể tự do thêm các từ khóa nhận diện vào trong ngoặc vuông cho từng nhóm)
-    var categoryMapping = {
+    // BẢN ĐỒ PHÂN CẤP DANH MỤC
+    var CATEGORY_HIERARCHY = {
+      "TL QĐ 272/QĐ-CHK": [
+        "Văn bản, TL Việt Nam", "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHĐ", "Danh mục TLHDKT",
+        "ICAO", "ANNEX", "DOC"
+      ],
+      "Văn bản, TL Việt Nam": [
+        "BQP-CTC", "QĐ, HD về ATS", "Luật", "Nghị định", "Thông tư", "Cục HK", "VBHĐ", "Danh mục TLHDKT"
+      ],
+      "ICAO": [
+        "ANNEX", "DOC"
+      ],
+      "TL ISO 9001:2015": [
+        "Chính sách chất lượng", "MTCL", "GCN ISO", "QT-TL ISO", "Lĩnh vực Không lưu", "Khác"
+      ],
+      "Tổ Không lưu": [
+        "Hệ thống VBĐHB TCT", "Hệ thống VBĐHB ĐKSKL", "Triển khai thông tin Tổ KL", "Họp Tổ KL"
+      ]
+    };
+
+    // --- BỘ TỪ ĐIỂN TỰ ĐỘNG GOM NHÓM (DYNAMIC MAPPING) ---
+    var fallbackMapping = {
       "TL QĐ 272/QĐ-CHK": ["272", "qđ-chk", "qđ 272", "quy định 272"],
       "TL ISO 9001:2015": ["iso", "chính sách chất lượng", "mtcl", "mục tiêu chất lượng", "sổ tay", "quy trình", "biểu mẫu", "hướng dẫn"],
       "ATVSLĐ": ["atvslđ", "an toàn", "vệ sinh lao động"],
@@ -1371,7 +1390,7 @@
       "Hệ thống VBDHĐ TCT": ["vbdhđ tct", "tct", "tổng công ty"],
       "Hệ thống VBDHĐ ĐKSKL": ["vbdhđ đkskl", "đkskl", "đài kiểm soát"],
       "Năng định, Năng lực": ["năng định", "năng lực"],
-      "Tổ Không lưu": ["không lưu", "bqp-ctc", "bqp ctc"], // Đã gom BQP-CTC vào tổ Không lưu
+      "Tổ Không lưu": ["không lưu", "bqp-ctc", "bqp ctc"],
       "Tổ Kỹ thuật": ["kỹ thuật"],
       "Tổ Phục vụ bay": ["phục vụ bay", "pvb"],
       "Tổ An ninh": ["an ninh"]
@@ -1391,35 +1410,46 @@
     docs.forEach(function(doc) {
      
       // -- Phân loại vào Danh mục lớn --
-      var catRaw = doc.category ? String(doc.category).trim() : "";
-      var finalCat = "Khác"; // Mặc định là Khác
+      var catRaw = doc.category ? String(doc.category).trim() : "Khác";
+      var finalCat = catRaw;
      
-      if (catRaw !== "") {
-        var lowerCatRaw = catRaw.toLowerCase();
-        var matched = false;
-
-
-
-
-        for (var parentMenu in categoryMapping) {
-          // Trùng tên menu gốc
-          if (lowerCatRaw.includes(parentMenu.toLowerCase())) {
-            finalCat = parentMenu;
-            matched = true;
+      // A. Tra cứu động từ CATEGORY_HIERARCHY (Tìm parent cao nhất)
+      var visited = {};
+      var foundParent = true;
+      while (foundParent) {
+        foundParent = false;
+        for (var parent in CATEGORY_HIERARCHY) {
+          var children = CATEGORY_HIERARCHY[parent] || [];
+          var isChild = children.some(function(c) { return c.toLowerCase() === finalCat.toLowerCase(); });
+          if (isChild && !visited[parent]) {
+            finalCat = parent;
+            visited[parent] = true;
+            foundParent = true;
             break;
           }
-          // Trùng từ khóa trong nhóm nhỏ
-          var keywords = categoryMapping[parentMenu];
-          for (var i = 0; i < keywords.length; i++) {
-            if (lowerCatRaw.includes(keywords[i].toLowerCase())) {
-              finalCat = parentMenu;
-              matched = true;
-              break;
-            }
-          }
-          if (matched) break;
         }
       }
+
+      // B. Fallback mapping
+      var lowerCatRaw = finalCat.toLowerCase();
+      var matchedFallback = false;
+      for (var rootMenu in fallbackMapping) {
+        if (lowerCatRaw === rootMenu.toLowerCase()) {
+          finalCat = rootMenu; 
+          matchedFallback = true;
+          break;
+        }
+        var keywords = fallbackMapping[rootMenu];
+        for (var i = 0; i < keywords.length; i++) {
+          if (lowerCatRaw.includes(keywords[i].toLowerCase())) {
+            finalCat = rootMenu;
+            matchedFallback = true;
+            break;
+          }
+        }
+        if (matchedFallback) break;
+      }
+      
       catCounts[finalCat] = (catCounts[finalCat] || 0) + 1;
 
 

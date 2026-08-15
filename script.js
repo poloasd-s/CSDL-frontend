@@ -1669,8 +1669,9 @@ function renderCharts(docs) {
   Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
   Chart.defaults.font.size = 13;
 
-  // --- BỘ TỪ ĐIỂN GOM NHÓM THÔNG MINH ---
-  var categoryMapping = {
+  // --- BỘ TỪ ĐIỂN TỰ ĐỘNG GOM NHÓM (DYNAMIC MAPPING) ---
+  // Hỗ trợ tự động nhận diện danh mục mới và gom nhóm theo CATEGORY_HIERARCHY
+  var fallbackMapping = {
     "TL QĐ 272/QĐ-CHK": ["272", "qđ-chk", "qđ 272", "quy định 272"],
     "TL ISO 9001:2015": ["iso", "chính sách chất lượng", "mtcl", "mục tiêu chất lượng", "sổ tay", "quy trình", "biểu mẫu", "hướng dẫn"],
     "ATVSLĐ": ["atvslđ", "an toàn", "vệ sinh lao động"],
@@ -1695,30 +1696,48 @@ function renderCharts(docs) {
   // 1. XỬ LÝ VÀ GOM NHÓM DỮ LIỆU
   docs.forEach(function (doc) {
     // -- Phân loại vào Danh mục lớn --
-    var catRaw = doc.category ? String(doc.category).trim() : "";
-    var finalCat = "Khác";
+    var catRaw = doc.category ? String(doc.category).trim() : "Khác";
+    var finalCat = catRaw;
 
-    if (catRaw !== "") {
-      var lowerCatRaw = catRaw.toLowerCase();
-      var matched = false;
-
-      for (var parentMenu in categoryMapping) {
-        if (lowerCatRaw.includes(parentMenu.toLowerCase())) {
-          finalCat = parentMenu;
-          matched = true;
+    // A. Tra cứu động từ CATEGORY_HIERARCHY (Tìm parent cao nhất)
+    var visited = {};
+    var foundParent = true;
+    while (foundParent) {
+      foundParent = false;
+      for (var parent in CATEGORY_HIERARCHY) {
+        var children = CATEGORY_HIERARCHY[parent] || [];
+        var isChild = children.some(function(c) { return c.toLowerCase() === finalCat.toLowerCase(); });
+        if (isChild && !visited[parent]) {
+          finalCat = parent;
+          visited[parent] = true;
+          foundParent = true;
           break;
         }
-        var keywords = categoryMapping[parentMenu];
-        for (var i = 0; i < keywords.length; i++) {
-          if (lowerCatRaw.includes(keywords[i].toLowerCase())) {
-            finalCat = parentMenu;
-            matched = true;
-            break;
-          }
-        }
-        if (matched) break;
       }
     }
+
+    // B. Nếu finalCat vẫn chưa khớp chính xác (do lỗi đánh máy/historical data), dùng fallback mapping
+    // Lưu ý: Nếu một danh mục mới được tạo ra (VD: "Pháp chế"), nó sẽ không match fallback
+    // và giữ nguyên tên "Pháp chế" làm danh mục lớn, biểu đồ sẽ tự động thêm mảng mới!
+    var lowerCatRaw = finalCat.toLowerCase();
+    var matchedFallback = false;
+    for (var rootMenu in fallbackMapping) {
+      if (lowerCatRaw === rootMenu.toLowerCase()) {
+        finalCat = rootMenu; // Chuẩn hóa lại tên hiển thị
+        matchedFallback = true;
+        break;
+      }
+      var keywords = fallbackMapping[rootMenu];
+      for (var i = 0; i < keywords.length; i++) {
+        if (lowerCatRaw.includes(keywords[i].toLowerCase())) {
+          finalCat = rootMenu;
+          matchedFallback = true;
+          break;
+        }
+      }
+      if (matchedFallback) break;
+    }
+
     catCounts[finalCat] = (catCounts[finalCat] || 0) + 1;
 
     // -- Đếm Năm ban hành --
