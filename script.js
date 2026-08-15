@@ -420,6 +420,48 @@ function parseDateToTime(dateVal) {
   return 0;
 }
 
+// --- HÀM CHUẨN HÓA HIỂN THỊ NGÀY THÁNG DD/MM/YYYY ---
+function formatDateDMY(dateVal) {
+  if (!dateVal && dateVal !== 0) return "N/A";
+  var str = String(dateVal).trim();
+  if (!str || str === "N/A" || str === "-") return "N/A";
+
+  var d = null;
+  if (dateVal instanceof Date) {
+    d = dateVal;
+  } else if (typeof dateVal === 'number') {
+    d = new Date(dateVal);
+  } else {
+    if (str.indexOf('/') !== -1) {
+      var parts = str.split(' ')[0].split('/');
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        } else {
+          var day = parseInt(parts[0], 10);
+          var month = parseInt(parts[1], 10);
+          var year = parseInt(parts[2], 10);
+          if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+            return String(day).padStart(2, '0') + '/' + String(month).padStart(2, '0') + '/' + year;
+          }
+        }
+      }
+    }
+    if (!d) {
+      d = new Date(str);
+    }
+  }
+
+  if (!d || isNaN(d.getTime())) {
+    return str;
+  }
+
+  var day = String(d.getDate()).padStart(2, '0');
+  var month = String(d.getMonth() + 1).padStart(2, '0');
+  var year = d.getFullYear();
+  return day + '/' + month + '/' + year;
+}
+
 // --- HÀM RENDER BẢNG TÀI LIỆU MỚI CẬP NHẬT (30 NGÀY GẦN NHẤT) ---
 function renderRecentTable(docs, isSearch) {
   var tbody = document.getElementById('table-recent-docs');
@@ -451,15 +493,7 @@ function renderRecentTable(docs, isSearch) {
   var adminClass = (currentUserRole === 'admin') ? '' : 'hidden';
 
   recentDocs.slice(0, limit).forEach(function (doc, index) {
-    var dateDisplay = "N/A";
-    if (doc.effectiveDate) {
-      var dObj = new Date(doc.effectiveDate);
-      if (!isNaN(dObj.getTime())) {
-        dateDisplay = dObj.toLocaleDateString('vi-VN');
-      } else {
-        dateDisplay = String(doc.effectiveDate).split('T')[0] || String(doc.effectiveDate);
-      }
-    }
+    var dateDisplay = formatDateDMY(doc.effectiveDate);
 
     var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
     var trichYeu = doc.abstract ? doc.abstract : '<span class="text-gray-400 italic">Chưa có trích yếu</span>';
@@ -517,11 +551,7 @@ function renderMobileCards(containerId, docs) {
 
   docs.forEach(function(doc) {
     var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
-    var dateDisplay = 'N/A';
-    if (doc.effectiveDate) {
-      var dObj = new Date(doc.effectiveDate);
-      if (!isNaN(dObj.getTime())) dateDisplay = dObj.toLocaleDateString('vi-VN');
-    }
+    var dateDisplay = formatDateDMY(doc.effectiveDate);
 
     var fileExt = 'TL';
     if (doc.fileName) {
@@ -585,12 +615,7 @@ function renderWarningTables(docs) {
     dataList.slice(0, 5).forEach(function (item) {
       var doc = item.doc;
       var evalInfo = item.eval;
-      var dateDisplay = "N/A";
-      if (doc.expiryDate) {
-        var dateObj = new Date(doc.expiryDate);
-        if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
-        else dateDisplay = String(doc.expiryDate);
-      }
+      var dateDisplay = formatDateDMY(doc.expiryDate);
 
       var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
       var downloadLink = doc.fileId ? 'https://drive.google.com/uc?export=download&id=' + doc.fileId : '#';
@@ -1075,11 +1100,7 @@ function displayCurrentPage() {
   var pageData = currentCategoryList.slice(startItem, endItem);
 
   pageData.forEach(function (doc, index) {
-    var dateDisplay = "N/A";
-    if (doc.effectiveDate) {
-      var dateObj = new Date(doc.effectiveDate);
-      if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
-    }
+    var dateDisplay = formatDateDMY(doc.effectiveDate);
 
     var evalInfo = evaluateDocumentExpiry(doc.expiryDate, doc.status);
     var statusBadgeHtml = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ' + evalInfo.badgeClass + '">' +
@@ -1431,17 +1452,11 @@ function exportToExcel() {
 
 
   var excelData = dataToExport.map(function (doc, index) {
-    var ngayBanHanh = "";
-    if (doc.effectiveDate) {
-      var d1 = new Date(doc.effectiveDate);
-      if (!isNaN(d1)) ngayBanHanh = d1.toLocaleDateString('vi-VN');
-    }
+    var ngayBanHanh = doc.effectiveDate ? formatDateDMY(doc.effectiveDate) : "";
+    if (ngayBanHanh === "N/A") ngayBanHanh = "";
 
-    var ngayHetHan = "";
-    if (doc.expiryDate) {
-      var d2 = new Date(doc.expiryDate);
-      if (!isNaN(d2)) ngayHetHan = d2.toLocaleDateString('vi-VN');
-    }
+    var ngayHetHan = doc.expiryDate ? formatDateDMY(doc.expiryDate) : "";
+    if (ngayHetHan === "N/A") ngayHetHan = "";
 
 
 
