@@ -117,6 +117,7 @@
               categories: rawCatList,
               effectiveDate: item["Ngày hiệu lực"] || item.ngayHieuLuc || item.effectiveDate || "",
               expiryDate: item["Ngày hết hiệu lực"] || item.ngayHetHieuLuc || item.expiryDate || "",
+              lastUpdated: item["Cập nhật lần cuối"] || item.capNhatLanCuoi || item["Thời gian cập nhật"] || item.updatedAt || item.lastUpdated || "",
               status: item["Trạng thái"] || item.trangThai || item.status || "Không xác định",
               driveLink: item["Link Drive"] || item.linkDrive || item.driveLink || "",
               fileId: item["File ID"] || item.fileID || item.fileId || "",
@@ -282,20 +283,53 @@
     var statExpired = document.getElementById('stat-expired'); if (statExpired) statExpired.innerText = countExpired;
   }
 
+  function parseDateToTime(dateVal) {
+    if (!dateVal) return 0;
+    if (dateVal instanceof Date) return dateVal.getTime();
+    if (typeof dateVal === 'number') return dateVal;
+    var str = String(dateVal).trim();
+    if (!str || str === 'N/A' || str === '-') return 0;
+    var d = new Date(str);
+    if (!isNaN(d.getTime())) return d.getTime();
+    if (str.includes('/')) {
+      var parts = str.split(' ');
+      var dateParts = parts[0].split('/');
+      if (dateParts.length === 3) {
+        var day = parseInt(dateParts[0], 10);
+        var month = parseInt(dateParts[1], 10) - 1;
+        var year = parseInt(dateParts[2], 10);
+        var customDate = new Date(year, month, day);
+        if (!isNaN(customDate.getTime())) return customDate.getTime();
+      }
+    }
+    return 0;
+  }
+
   function renderRecentTable(docs, isSearch) {
     var tbody = document.getElementById('table-recent-docs');
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    var thirtyDaysAgo = new Date().getTime() - (30 * 24 * 60 * 60 * 1000);
+    var now = Date.now();
+    var thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
 
     var recentDocs = docs;
     if (!isSearch) {
       recentDocs = docs.filter(function(doc) {
-        if (!doc.effectiveDate) return false;
-        var docTime = new Date(doc.effectiveDate).getTime();
-        return !isNaN(docTime) && docTime >= thirtyDaysAgo;
+        var updateTime = parseDateToTime(doc.lastUpdated);
+        var effectiveTime = parseDateToTime(doc.effectiveDate);
+        return (updateTime >= thirtyDaysAgo) || (effectiveTime >= thirtyDaysAgo);
       });
+
+      if (recentDocs.length === 0 && docs.length > 0) {
+        recentDocs = docs.slice().reverse();
+      } else {
+        recentDocs.sort(function(a, b) {
+          var timeA = Math.max(parseDateToTime(a.lastUpdated), parseDateToTime(a.effectiveDate));
+          var timeB = Math.max(parseDateToTime(b.lastUpdated), parseDateToTime(b.effectiveDate));
+          return timeB - timeA;
+        });
+      }
     }
 
     if (recentDocs.length === 0) {
@@ -308,9 +342,14 @@
 
     recentDocs.slice(0, limit).forEach(function(doc, index) {
       var dateDisplay = "N/A";
-      if (doc.effectiveDate) {
-        var dateObj = new Date(doc.effectiveDate);
-        if (!isNaN(dateObj)) dateDisplay = dateObj.toLocaleDateString('vi-VN');
+      var timeShow = doc.effectiveDate || doc.lastUpdated;
+      if (timeShow) {
+        var dObj = new Date(timeShow);
+        if (!isNaN(dObj.getTime())) {
+          dateDisplay = dObj.toLocaleDateString('vi-VN');
+        } else {
+          dateDisplay = String(timeShow).split('T')[0] || String(timeShow);
+        }
       }
 
       var tenTL = doc.fileName ? doc.fileName : '<span class="text-gray-400 italic">Chưa có tên</span>';
@@ -673,18 +712,24 @@
     });
   } 
   else if (categoryName === '30 ngày gần nhất') {
-    // 1. Lấy mốc thời gian 30 ngày trước
-    var thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    var now = Date.now();
+    var thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
 
-    // 2. Lọc danh sách 30 ngày
     baseCategoryList = allDocuments.filter(function(doc) {
-      var rawDate = doc.effectiveDate; 
-      if (!rawDate) return false;
-      var docDate = new Date(rawDate);
-      if (isNaN(docDate.getTime())) return false;
-      return docDate >= thirtyDaysAgo;
+      var updateTime = parseDateToTime(doc.lastUpdated);
+      var effectiveTime = parseDateToTime(doc.effectiveDate);
+      return (updateTime >= thirtyDaysAgo) || (effectiveTime >= thirtyDaysAgo);
     });
+
+    if (baseCategoryList.length === 0 && allDocuments.length > 0) {
+      baseCategoryList = allDocuments.slice().reverse();
+    } else {
+      baseCategoryList.sort(function(a, b) {
+        var timeA = Math.max(parseDateToTime(a.lastUpdated), parseDateToTime(a.effectiveDate));
+        var timeB = Math.max(parseDateToTime(b.lastUpdated), parseDateToTime(b.effectiveDate));
+        return timeB - timeA;
+      });
+    }
   } 
   else {
     baseCategoryList = allDocuments.filter(function(doc) {
