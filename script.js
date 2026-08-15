@@ -477,7 +477,7 @@ function getDirectDownloadUrl(doc) {
     if (match) fileId = match[1];
   }
   if (fileId) {
-    return 'https://drive.google.com/uc?export=download&id=' + fileId + '&confirm=t';
+    return 'https://drive.usercontent.google.com/download?id=' + fileId + '&export=download&authuser=0&confirm=t';
   }
   return doc.driveLink || '#';
 }
