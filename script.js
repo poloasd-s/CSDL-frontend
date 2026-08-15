@@ -172,10 +172,8 @@ function loadDashboardData() {
       const mappedData = data.map(item => {
         let mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
         
-        // Tạm thời chỉ hiển thị Main tag trước, Multi-tag để người dùng tự thêm khi upload/sửa
-        let rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
-          ? item.categories.slice()
-          : [mainCat];
+        // Tạm thời chỉ hiển thị Main tag (Danh mục)
+        let rawCatList = [mainCat];
 
         // 1. Tự động nhận diện tài liệu Annex để phân vào danh mục ICAO -> ANNEX
         let contextStr = (

@@ -73,10 +73,8 @@
           allDocuments = (rawDocs || []).map(function(item) {
             var mainCat = item["Danh mục"] || item.danhMuc || item.category || "Khác";
             
-            // Tạm thời chỉ hiển thị Main tag trước, Multi-tag để người dùng tự thêm khi upload/sửa
-            var rawCatList = (item.categories && Array.isArray(item.categories) && item.categories.length > 0)
-              ? item.categories.slice()
-              : [mainCat];
+            // Tạm thời chỉ hiển thị Main tag (Danh mục)
+            var rawCatList = [mainCat];
 
             var docNumber = item["Số/Ký hiệu VB"] || item.soKyHieuVB || item.docNumber || "";
             var fileName = item["Tên tài liệu"] || item.tenTaiLieu || item.fileName || "";
